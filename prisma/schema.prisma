@@ -10,7 +10,7 @@ datasource db {
 model Session {
   id        String   @id
   sid       String   @unique
-  // data      String   @db.MediumText  // MediumText may be needed for MySql
+  data      String   
   expiresAt   DateTime
 }
 
