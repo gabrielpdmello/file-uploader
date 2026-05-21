@@ -30,9 +30,17 @@ function getLogin(req, res) {
     res.render("login");
 }
 
+function getUpload(req, res) {
+    res.render('upload');
+}
+
+function postUpload(req, res, next) {
+    res.redirect('/');
+}
+
 function errorHandler(err, req, res, next) {
     res.status(500)
-    res.render('error', { error: err })
+    res.render('error', { error: err });
 
 }
 
@@ -42,5 +50,7 @@ module.exports = {
     getSignup,
     postSignup,
     getLogin,
+    getUpload,
+    postUpload,
     errorHandler
 }
