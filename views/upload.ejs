@@ -6,6 +6,7 @@
     <title>File uploader</title>
 </head>
 <body>
+    <% if (locals.currentUser) {%>
     <form action="/upload" method="post" enctype="multipart/form-data">
         <span>
             <label for="file">Upload file</label>
@@ -13,5 +14,8 @@
         </span>
         <button type="submit">Submit</button>
     </form>
+    <%} else { %>
+    <p>You must <a href="/login">login</a> first.</p>
+    <% } %>
 </body>
 </html>
