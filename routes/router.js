@@ -1,20 +1,12 @@
 const { Router } = require("express");
-const fs = require('node:fs');
 const controller = require("../controllers/controller");
+const storageController = require("../controllers/storage");
 const router = Router();
 const passport = require("../config/passport")
-const multer  = require('multer')
+const multer  = require('multer');
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    if (!fs.existsSync('./uploads')){
-        console.log('Creating uploads folder...')
-        fs.mkdirSync('./uploads', { recursive: true });
-    }
-    cb(null, './uploads')
-  },
-  filename: function (req, file, cb) {
-    cb(null, file.originalname)
-  }
+  destination: storageController.destination,
+  filename: storageController.filename
 })
 
 const upload = multer({ storage: storage })
@@ -35,6 +27,8 @@ router.post("/login",
         failureRedirect: "/login",
     })
 )
+
+router.get("/logout", controller.logout);
 
 router.get('/upload', controller.getUpload);
 router.post('/upload', upload.single('file'), controller.postUpload);
