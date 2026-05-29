@@ -10,6 +10,9 @@
         <h2 class="username">Welcome, <%= currentUser.username %></h2>
     <%}%>
     <ul>
+        <% if (locals.currentUser) {%>
+        <li><a href="/folder">root</a></li>
+        <%}%>
         <li><a href="/login">login</a></li>
         <li><a href="/logout">logout</a></li>
         <li><a href="/signup">signup</a></li>

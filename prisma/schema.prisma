@@ -19,4 +19,14 @@ model User {
   username String  @unique
   name  String?
   password  String
+  folders Folder[]
+}
+
+model Folder {
+  id String @id @default(uuid())
+  name String
+  parent Int
+  files String[]
+  user User @relation(fields: [ownerId], references: [id])
+  ownerId Int
 }
