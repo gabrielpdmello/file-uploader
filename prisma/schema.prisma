@@ -25,8 +25,15 @@ model User {
 model Folder {
   id String @id @default(uuid())
   name String
-  parent Int
-  files String[]
+  parent String?
   user User @relation(fields: [ownerId], references: [id])
   ownerId Int
+  files File[]
+}
+
+model File {
+  id String @id @default(uuid())
+  name String
+  folder Folder @relation(fields: [folderId], references: [id])
+  folderId String
 }

@@ -12,7 +12,9 @@ async function createUser(name, username, password) {
         data: {
             name: name,
             parent: null,
-            ownerId: user.id,
+            user: {
+                connect: {id: user.id}
+            }
         }
     })
 }

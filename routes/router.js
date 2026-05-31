@@ -14,14 +14,21 @@ router.get('/signup', controller.getSignup);
 router.post('/signup', controller.postSignup);
 
 router.get('/login', controller.getLogin);
-router.post("/login", controller.postLogin);
+router.post("/login",
+    passport.authenticate("local", {
+        successRedirect: "/",
+        failureRedirect: "/login",
+    })
+);
 
 router.get("/logout", controller.logout);
 
 router.get('/upload', controller.getUpload);
 router.post('/upload', controller.postUpload);
 
-router.get('/folder', storage.getRoot);
+router.get('/folder/root', storage.getRoot);
+
+router.post('/addfolder', storage.addFolder);
 
 router.use(controller.errorHandler);
 

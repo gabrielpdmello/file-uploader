@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Folder</title>
+</head>
+<body>
+    <h1>Folders</h1>
+    <% if (folders.length < 1) { %>
+    <p>no folders</p>
+    <% } else { %>
+    <ul>
+        <% folders.forEach(folder => {  %>
+        <li><%= folder.name %></li>
+        <% }) %>
+    </ul>
+    <% } %>
+    <h1>Files</h1>
+    <% if (files.length < 1) { %>
+    <p>no files</p>
+    <% } else { %>
+    <ul>
+        <% files.forEach(file => {  %>
+        <li><%= file.name %></li>
+        <% }) %>
+    </ul>
+    <% } %>
+    <form action="/addfolder" method="post">
+        <label for="name">Name</label>
+        <input type="text" name="name" id="name">
+        <input type="hidden" name="owner" value="<%= currentUser.id %>">
+        <input type="hidden" name="folder" value="<%= currentFolder.id %>">
+        <button>Add folder</button>
+    </form>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <label for="file">Upload file</label>
+        <input type="file" id="file" name="file">
+        <input type="hidden" name="folder" value="<%= currentFolder.id %>">
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
