@@ -1,15 +1,6 @@
 const bcrypt = require('bcryptjs');
 const user = require('../queries/user');
-const storagedb = require('../queries/storage');
 const passport = require("../config/passport")
-const storageController = require("./storage");
-const multer = require('multer');
-const storage = multer.diskStorage({
-    destination: storageController.destination,
-    filename: storageController.filename
-})
-
-const upload = multer({ storage: storage })
 
 async function locals(req, res, next) {
     res.locals.currentUser = req.user;
@@ -30,7 +21,7 @@ async function postSignup(req, res, next) {
         const username = req.body.username;
         const hashedPassword = await bcrypt.hash(req.body.password, 10);
         user.createUser(name, username, hashedPassword)
-        res.redirect("/");
+        res.redirect("/login");
     } catch (error) {
         next(error);
     }
@@ -53,17 +44,6 @@ function getUpload(req, res) {
     res.render('upload');
 }
 
-
-const postUpload = [
-    upload.single('file'),
-    (req, res, next) => {
-        const filename = req.file.originalname;
-        const folder = req.body.folder;
-        storagedb.addFile(filename, folder)
-        res.redirect('/folder/root');
-    }
-]
-
 function errorHandler(err, req, res, next) {
     res.status(500)
     res.render('error', { error: err });
@@ -76,9 +56,7 @@ module.exports = {
     getSignup,
     postSignup,
     getLogin,
-    // postLogin,
     logout,
     getUpload,
-    postUpload,
     errorHandler
 }

@@ -24,11 +24,19 @@ router.post("/login",
 router.get("/logout", controller.logout);
 
 router.get('/upload', controller.getUpload);
-router.post('/upload', controller.postUpload);
+router.post('/upload', storage.postUpload);
 
-router.get('/folder/root', storage.getRoot);
+router.get('/folder', storage.getRoot);
 
-router.post('/addfolder', storage.addFolder);
+router.get('/folder/:folderId', storage.getFolder);
+
+router.get('/delete/:folderId', storage.getDeleteFolder);
+
+router.post('/addfolder', storage.postAddFolder);
+
+router.get('/download/:fileId', storage.getFile);
+
+router.get('/delete/:fileId', storage.getDeleteFile)
 
 router.use(controller.errorHandler);
 

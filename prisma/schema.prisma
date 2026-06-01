@@ -25,15 +25,17 @@ model User {
 model Folder {
   id String @id @default(uuid())
   name String
-  parent String?
+  parentId String?
+  parent   Folder?   @relation("parentChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  children  Folder[]  @relation("parentChildren")
   user User @relation(fields: [ownerId], references: [id])
   ownerId Int
   files File[]
 }
 
 model File {
-  id String @id @default(uuid())
+  id String @id
   name String
-  folder Folder @relation(fields: [folderId], references: [id])
+  folder Folder @relation(fields: [folderId], references: [id], onDelete: Cascade)
   folderId String
 }

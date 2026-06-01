@@ -1,42 +1,121 @@
-const fs = require('node:fs');
-const storage = require('../queries/storage');
-
-function destination (req, file, cb) {
-    const path = `./uploads/${req.user.username}`;
-    if (!fs.existsSync(path)) {
-        fs.mkdirSync(path, { recursive: true });
-        console.log(`Created uploads folder for user ${req.user.username}.`)
+const fs = require('node:fs/promises');
+const storagedb = require('../queries/storage');
+const path = require('path');
+const { randomUUID } = require('crypto');
+const multer = require('multer');
+const storage = multer.diskStorage({
+    destination: async function destination(req, file, cb) {
+        const path = `./uploads/${req.user.username}`;
+        await fs.mkdir(path, { recursive: true });
+        cb(null, path)
+    },
+    filename: function filename(req, file, cb) {
+        const fileName = randomUUID();
+        cb(null, fileName)
     }
-    cb(null, path)
-}
+})
 
-async function filename(req, file, cb) {
-    const fileName = file.originalname;
-    cb(null, fileName)
-}
+const upload = multer({ storage: storage })
 
 async function getRoot(req, res) {
-    const root = await storage.getRootFolder(req.user.id)
-    const folders = await storage.getChildrenFolders(root[0].id)
-    const files = await storage.getFiles(root[0].id);
-    res.render('root', {
+    const root = await storagedb.getRootFolder(req.user.id)
+    const folders = await storagedb.getChildrenFolders(root[0].id)
+    const files = await storagedb.getFiles(root[0].id);
+    res.render('folder', {
         folders: folders,
         files: files,
-        currentFolder: root[0]
+        currentFolder: root[0],
+        isRoot: true
     })
 }
 
-async function addFolder(req, res, next) {
+async function getFolder(req, res) {
+    const folderId = req.params.folderId;
+    const folder = await storagedb.getFolder(folderId);
+    const folders = await storagedb.getChildrenFolders(folderId)
+    const files = await storagedb.getFiles(folderId);
+    res.render('folder', {
+        folders: folders,
+        files: files,
+        currentFolder: folder[0],
+        isRoot: false
+    })
+}
+
+
+async function postAddFolder(req, res, next) {
     const name = req.body.name;
-    const parent = req.body.folder;
+    const currentFolder = req.body.folder;
     const owner = Number(req.body.owner);
-    const folder = await storage.addFolder(name, parent, owner);
-    res.redirect('/folder/root');
+    const folder = await storagedb.addFolder(name, currentFolder, owner);
+    const backURL = req.get('Referer') || '/'; 
+    res.redirect(backURL);
+
+}
+
+const postUpload = [
+    upload.single('file'),
+    (req, res, next) => {
+        const filename = req.file.filename;
+        const originalname = req.file.originalname;
+        const currentFolder = req.body.folder;
+        storagedb.addFile(filename, originalname, currentFolder)
+        const backURL = req.get('Referer') || '/'; 
+    res.redirect(backURL);
+
+    }
+]
+
+async function getFile(req, res) {
+    const username = req.user.username;
+    const fileId = req.params.fileId;
+    const filePath = path.join(__dirname, `../uploads/${username}`, `${fileId}`);
+    const file = await storagedb.getFile(fileId);
+    const filename = file[0].name;
+    res.download(filePath, filename)
+
+}
+
+async function getDeleteFile(req, res, next) {
+    const username = req.user.username;
+    const fileId = req.params.fileId;
+    const filePath = path.join(__dirname, `../uploads/${username}`, `${fileId}`);
+    try {
+        const deletedFile = await storagedb.deleteFile(fileId);
+        await fs.unlink(filePath)
+        console.log(`User ${username} deleted file ${deletedFile.name}, id ${deletedFile.id}`)
+    } catch (err) {
+        next(err)
+    }
+    const backURL = req.get('Referer') || '/'; 
+    res.redirect(backURL);
+}
+
+async function getDeleteFolder(req, res, next) {
+    const username = req.user.username;
+    const folderId = req.params.folderId;
+    try {
+        const deletedFiles = await storagedb.deleteFolder(folderId);
+        deletedFiles.forEach(async file => {
+            const filePath = path.join(__dirname, `../uploads/${username}`, `${file.id}`);
+            await fs.unlink(filePath)
+            console.log(`User ${username} deleted file ${file.name}, id ${file.id}`)
+        })
+        const backURL = req.get('Referer') || '/'; 
+        res.redirect(backURL);
+    } catch (err) {
+        next(err)
+    }
+
 }
 
 module.exports = {
-    destination,
-    filename,
     getRoot,
-    addFolder
+    getFolder,
+    postAddFolder,
+    postUpload,
+    getFile,
+    getDeleteFile,
+    getDeleteFolder,
+
 }

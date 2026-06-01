@@ -12,10 +12,14 @@
     <% } else { %>
     <ul>
         <% folders.forEach(folder => {  %>
-        <li><%= folder.name %></li>
+        <li><a href="/folder/<%= folder.id %>"><%= folder.name %></a></li>
+        <form action="/delete/<%= folder.id %>" method="get">
+            <button type="submit">Delete</button>
+        </form>
         <% }) %>
     </ul>
     <% } %>
+
     <h1>Files</h1>
     <% if (files.length < 1) { %>
     <p>no files</p>
@@ -23,6 +27,12 @@
     <ul>
         <% files.forEach(file => {  %>
         <li><%= file.name %></li>
+        <form action="/download/<%= file.id %>" method="get">
+            <button type="submit">Download</button>
+        </form>
+        <form action="/delete/<%= file.id %>" method="get">
+            <button type="submit">Delete</button>
+        </form>
         <% }) %>
     </ul>
     <% } %>
