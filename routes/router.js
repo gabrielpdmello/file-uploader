@@ -30,13 +30,13 @@ router.get('/folder', storage.getRoot);
 
 router.get('/folder/:folderId', storage.getFolder);
 
-router.get('/delete/:folderId', storage.getDeleteFolder);
+router.get('/delete-folder/:folderId', storage.getDeleteFolder);
 
 router.post('/addfolder', storage.postAddFolder);
 
 router.get('/download/:fileId', storage.getFile);
 
-router.get('/delete/:fileId', storage.getDeleteFile)
+router.get('/delete-fIle/:fileId', storage.getDeleteFile)
 
 router.use(controller.errorHandler);
 
