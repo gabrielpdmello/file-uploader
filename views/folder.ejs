@@ -13,7 +13,7 @@
     <ul>
         <% folders.forEach(folder => {  %>
         <li><a href="/folder/<%= folder.id %>"><%= folder.name %></a></li>
-        <form action="/delete-folder/<%= folder.id %>" method="get">
+        <form action="/delete-folder/<%= folder.id %>" method="post">
             <button type="submit">Delete</button>
         </form>
         <% }) %>
@@ -27,10 +27,10 @@
     <ul>
         <% files.forEach(file => {  %>
         <li><%= file.name %></li>
-        <form action="/download/<%= file.id %>" method="get">
+        <form action="/download/<%= file.id %>" method="post">
             <button type="submit">Download</button>
         </form>
-        <form action="/delete-file/<%= file.id %>" method="get">
+        <form action="/delete-file/<%= file.id %>" method="post">
             <button type="submit">Delete</button>
         </form>
         <% }) %>

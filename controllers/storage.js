@@ -66,7 +66,7 @@ const postUpload = [
     }
 ]
 
-async function getFile(req, res) {
+async function postDownloadFile(req, res) {
     const username = req.user.username;
     const fileId = req.params.fileId;
     const filePath = path.join(__dirname, `../uploads/${username}`, `${fileId}`);
@@ -76,7 +76,7 @@ async function getFile(req, res) {
 
 }
 
-async function getDeleteFile(req, res, next) {
+async function postDeleteFile(req, res, next) {
     const username = req.user.username;
     const fileId = req.params.fileId;
     const filePath = path.join(__dirname, `../uploads/${username}`, `${fileId}`);
@@ -91,7 +91,7 @@ async function getDeleteFile(req, res, next) {
     res.redirect(backURL);
 }
 
-async function getDeleteFolder(req, res, next) {
+async function postDeleteFolder(req, res, next) {
     const username = req.user.username;
     const folderId = req.params.folderId;
     try {
@@ -114,8 +114,8 @@ module.exports = {
     getFolder,
     postAddFolder,
     postUpload,
-    getFile,
-    getDeleteFile,
-    getDeleteFolder,
+    postDownloadFile,
+    postDeleteFile,
+    postDeleteFolder,
 
 }
