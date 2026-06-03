@@ -2,55 +2,81 @@
 <html lang="en">
 <head>
     <%- include("partials/head.ejs") %>
+<link rel="stylesheet" href="styles.css">
+
 </head>
 <body>
     <%- include("partials/header.ejs") %>
-    <div class="flex-container">
+    <div class="container">
         <div class="sidebar">
-            <a class="btn" href="/folder">Home</a>
+            <a class="btn w-100" href="/folder">Home</a>
             <form class="add-data" action="/addfolder" method="post">
                 <label for="folder">Add folder</label>
-                <input type="text" name="folder" id="name">
+                <input type="text" name="name" id="name">
                 <input type="hidden" name="owner" value="<%= currentUser.id %>">
                 <input type="hidden" name="folder" value="<%= currentFolder.id %>">
                 <button class="btn">Add</button>
             </form>
-            <form class="add-data" action="/upload" method="post" enctype="multipart/form-data">
-                <label for="file">Upload file</label>
-                <input type="file" id="file" name="file">
+            <form action="/upload" method="post" enctype="multipart/form-data">
+                <label class="btn w-100" for="file">Upload file</label>
+                <input type="file" id="file" name="file" onchange="form.submit()">
                 <input type="hidden" name="folder" value="<%= currentFolder.id %>">
-                <button type="submit">Submit</button>
+                <!-- <button type="submit">Submit</button> -->
             </form>
-            <a class="btn" href="/trash">Trash</a>
+            <a class="btn w-100" href="/trash">Trash</a>
         </div>
-    <% if (folders.length < 1) { %>
-    <p>no folders</p>
-    <% } else { %>
-    <ul>
-        <% folders.forEach(folder => {  %>
-        <li><a href="/folder/<%= folder.id %>"><%= folder.name %></a></li>
-        <form action="/delete-folder/<%= folder.id %>" method="post">
-            <button type="submit">Delete</button>
-        </form>
-        <% }) %>
-    </ul>
-    <% } %>
-
-    <% if (files.length < 1) { %>
-    <p>no files</p>
-    <% } else { %>
-    <ul>
-        <% files.forEach(file => {  %>
-        <li><%= file.name %></li>
-        <form action="/download/<%= file.id %>" method="post">
-            <button type="submit">Download</button>
-        </form>
-        <form action="/delete-file/<%= file.id %>" method="post">
-            <button type="submit">Delete</button>
-        </form>
-        <% }) %>
-    </ul>
-    <% } %>
+        <div class="file-container">
+            <% if (folders.length < 1 && files.length < 1) { %>
+            <span class="empty">This folder is empty</span>
+            <% } else { %>
+                <table>
+                    <thead>
+                        <tr>
+                            <td class="column-name">Name</td>
+                            <td class="column-updated">Last updated</td>
+                            <td class="column-size">Size</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (folders.length > 0) { %>
+                            <% folders.forEach(folder => {  %>
+                            <tr>
+                                <td>
+                                    <a href="/folder/<%= folder.id %>"><%= folder.name %></a>
+                                </td>
+                                <td>01/01/2026</td>
+                                <td>321kb</td>
+                                <td>
+                                    <form class="delete-form" action="/delete-folder/<%= folder.id %>" method="post">
+                                        <button class="btn" type="submit">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <% }) %>
+                        <% } %>
+                        <% if (files.length > 0) { %>
+                            <% files.forEach(file => {  %>
+                            <tr>
+                                <td>
+                                    <%= file.name %>
+                                </td>
+                                <td>01/01/2026</td>
+                                <td>321kb</td>
+                                <td class="flex-container">
+                                    <form class="download-form" action="/download/<%= file.id %>" method="post">
+                                        <button class="btn" type="submit">Download</button>
+                                    </form>
+                                    <form class="delete-form" action="/delete-file/<%= file.id %>" method="post">
+                                        <button class="btn" type="submit">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <% }) %>
+                        <% } %>
+                    </tbody>
+                </table>
+            <% } %>
+        </div>
     </div>
 </body>
 </html>

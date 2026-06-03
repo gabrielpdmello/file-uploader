@@ -1,6 +1,7 @@
 :root {
     --primary: rgb(0, 76, 15);
     --secondary: rgb(2, 135, 4);
+    --header-height: 6rem;
 }
 
 * {
@@ -9,14 +10,20 @@
 }
 
 
-body {
+
+
+html, body {
     margin: 0;
+    width: 100%;
 }
 
 header {
+    display: flex;
+    align-items: center;
     color: white;
     background-image: linear-gradient(to right, var(--primary), var(--secondary));
     padding: 2rem 5rem;
+    height: var(--header-height);
 }
 
 h1 {
@@ -47,6 +54,9 @@ li {
     padding: 0.8rem 3rem;
     border-radius: 50px;
     margin-bottom: 1.5rem;
+    cursor: pointer;
+    text-align: center;
+    border: none;
 }
 
 .btn--outline {
@@ -83,11 +93,21 @@ a {
     width: 100%;
 }
 
+.container {
+    display: flex;
+    width: 100%;
+    height: calc(100vh - var(--header-height));
+    flex-wrap: wrap;
+}
+
 .sidebar {
     display: inline-block;
     width: fit-content;
-    border: 1px solid black;
+    border-right: 6px solid var(--primary);
     padding: 1.5rem;
+    height: 100%;
+    min-height: 0; /* CRITICAL: Allows the flex item to shrink below its content size */
+    overflow-y: auto; /* Adds a scrollbar only if the content overflows the available space */
 }
 
 .add-data {
@@ -110,6 +130,46 @@ a {
     margin-left: auto;
 }
 
+input[type="File"] {
+    display: none;
+}
+
+.file-container {
+    position: relative;
+    flex-grow: 1;
+    padding: 2rem;
+
+}
+
+.empty {
+    position: absolute; 
+    right: 50%;
+    top: 50%;
+    transform: translate(50%, -50%);
+}
+
+.w-100 {
+    width: 100%;
+}
+
 .flex-container {
     display: flex;
+    gap: 1rem;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse
+}
+
+tr {
+    border-bottom: 1px solid black;
+}
+
+thead {
+    font-weight: bold;
+}
+
+.column-name {
+    width: 40%;
 }
