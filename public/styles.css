@@ -1,0 +1,115 @@
+:root {
+    --primary: rgb(0, 76, 15);
+    --secondary: rgb(2, 135, 4);
+}
+
+* {
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+
+body {
+    margin: 0;
+}
+
+header {
+    color: white;
+    background-image: linear-gradient(to right, var(--primary), var(--secondary));
+    padding: 2rem 5rem;
+}
+
+h1 {
+    margin: 0;
+}
+
+.landing-main {
+    padding: 2rem 3rem 3rem 4rem;
+    margin: 3rem 0 0 4rem;
+    max-width: 60rem;
+    width: 100%;
+    border: 4px solid var(--secondary);
+    border-radius: 10px;
+}
+
+ul {
+    margin-bottom: 3rem;
+}
+
+li {
+    margin-bottom: 0.5rem;
+}
+
+.btn, .btn--outline {
+    display: inline-block;
+    background-color: var(--primary);
+    color: white;
+    padding: 0.8rem 3rem;
+    border-radius: 50px;
+    margin-bottom: 1.5rem;
+}
+
+.btn--outline {
+    color: black;
+    background-color: transparent;
+    box-shadow: inset 0 0 0 3px var(--primary);
+
+}
+
+a {
+    text-decoration: none;
+}
+
+.form-container {
+    display: block;
+    margin: 6rem auto;
+    min-width: 40rem;
+    width: fit-content;
+    padding: 2rem 3rem 3rem 4rem;
+    border: 4px solid var(--secondary);
+    border-radius: 10px;
+}
+
+.form-row {
+    display: block;
+    margin-bottom: 2rem;
+}
+.form-row label {
+    display: block;
+}
+
+.form-row input {
+    display: block;
+    width: 100%;
+}
+
+.sidebar {
+    display: inline-block;
+    width: fit-content;
+    border: 1px solid black;
+    padding: 1.5rem;
+}
+
+.add-data {
+    border: 2px solid var(--primary);
+    border-radius: 10px;
+    padding: 1rem;
+    width:fit-content;
+    margin-bottom: 1.5rem;
+}
+
+.add-data input {
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.add-data .btn {
+    margin-bottom: 0;
+    padding: 0.5rem 1rem;
+    display: block;
+    margin-left: auto;
+}
+
+.flex-container {
+    display: flex;
+}

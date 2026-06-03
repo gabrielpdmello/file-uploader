@@ -1,9 +1,8 @@
 const express = require("express");
 const path = require("node:path");
 const router = require("./routes/router");
-const assetsPath = path.join(__dirname, "public");
 const expressSession = require('express-session');
-const { PrismaPg } = require('@prisma/adapter-pg');  // For other db adapters, see Prisma docs
+const { PrismaPg } = require('@prisma/adapter-pg');
 const { PrismaClient } = require('./generated/prisma/client');
 const { PrismaSessionStore } = require('@quixo3/prisma-session-store');
 
@@ -12,7 +11,9 @@ const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });
 const app = express();
 
+const assetsPath = path.join(__dirname, "public");
 app.use(express.static(assetsPath));
+
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: false }));

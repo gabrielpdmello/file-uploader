@@ -1,12 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Folder</title>
+    <%- include("partials/head.ejs") %>
 </head>
 <body>
-    <h1>Folders</h1>
+    <%- include("partials/header.ejs") %>
+    <div class="flex-container">
+        <div class="sidebar">
+            <a class="btn" href="/folder">Home</a>
+            <form class="add-data" action="/addfolder" method="post">
+                <label for="folder">Add folder</label>
+                <input type="text" name="folder" id="name">
+                <input type="hidden" name="owner" value="<%= currentUser.id %>">
+                <input type="hidden" name="folder" value="<%= currentFolder.id %>">
+                <button class="btn">Add</button>
+            </form>
+            <form class="add-data" action="/upload" method="post" enctype="multipart/form-data">
+                <label for="file">Upload file</label>
+                <input type="file" id="file" name="file">
+                <input type="hidden" name="folder" value="<%= currentFolder.id %>">
+                <button type="submit">Submit</button>
+            </form>
+            <a class="btn" href="/trash">Trash</a>
+        </div>
     <% if (folders.length < 1) { %>
     <p>no folders</p>
     <% } else { %>
@@ -20,7 +36,6 @@
     </ul>
     <% } %>
 
-    <h1>Files</h1>
     <% if (files.length < 1) { %>
     <p>no files</p>
     <% } else { %>
@@ -36,18 +51,6 @@
         <% }) %>
     </ul>
     <% } %>
-    <form action="/addfolder" method="post">
-        <label for="name">Name</label>
-        <input type="text" name="name" id="name">
-        <input type="hidden" name="owner" value="<%= currentUser.id %>">
-        <input type="hidden" name="folder" value="<%= currentFolder.id %>">
-        <button>Add folder</button>
-    </form>
-    <form action="/upload" method="post" enctype="multipart/form-data">
-        <label for="file">Upload file</label>
-        <input type="file" id="file" name="file">
-        <input type="hidden" name="folder" value="<%= currentFolder.id %>">
-        <button type="submit">Submit</button>
-    </form>
+    </div>
 </body>
 </html>

@@ -1,22 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File uploader</title>
+    <%- include("partials/head.ejs") %>
 </head>
+
 <body>
-    <% if (locals.currentUser) {%>
-        <h2 class="username">Welcome, <%= currentUser.username %></h2>
-    <%}%>
-    <ul>
-        <% if (locals.currentUser) {%>
-        <li><a href="/folder">root</a></li>
-        <%}%>
-        <li><a href="/login">login</a></li>
-        <li><a href="/logout">logout</a></li>
-        <li><a href="/signup">signup</a></li>
-        <li><a href="/upload">upload</a></li>
-    </ul>
+    <%- include("partials/header.ejs") %>
+    <main class="landing-main">
+        <h2>Simple Cloud Storage Service</h2>
+        <p>The core functionalities of this app are:</p>
+        <ul>
+            <li>CRUD for files and folders;</li>
+            <li>Folder sharing;</li>
+            <li>Authentication with Passport.js and Prisma session store</li>
+            <li>Trash can funcionality, where deleted files will stay for a few days;</li>
+            <li>+ a few minor details.</li>
+        </ul>
+        <a class="btn--outline" href="/login">Login</a>
+        <a class="btn" href="/signup">Signup</a>
+        <p>This project's repo can be accessed <a href="<%= repoUrl %>">here</a>.</p>
+    </main>
 </body>
+
 </html>

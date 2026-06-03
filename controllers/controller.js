@@ -1,6 +1,8 @@
 const bcrypt = require('bcryptjs');
 const user = require('../queries/user');
 const passport = require("../config/passport")
+require('dotenv').config();
+
 
 async function locals(req, res, next) {
     res.locals.currentUser = req.user;
@@ -8,7 +10,7 @@ async function locals(req, res, next) {
 }
 
 async function index(req, res) {
-    res.render("index");
+    res.render("index", {repoUrl: process.env.REPOURL});
 }
 
 function getSignup(req, res) {

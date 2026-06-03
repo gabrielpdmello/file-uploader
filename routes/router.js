@@ -16,7 +16,7 @@ router.post('/signup', controller.postSignup);
 router.get('/login', controller.getLogin);
 router.post("/login",
     passport.authenticate("local", {
-        successRedirect: "/",
+        successRedirect: "/folder",
         failureRedirect: "/login",
     })
 );
