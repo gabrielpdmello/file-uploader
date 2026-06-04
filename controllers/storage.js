@@ -45,7 +45,7 @@ async function getFolder(req, res) {
 
 async function postAddFolder(req, res, next) {
     const name = req.body.name;
-    const currentFolder = req.body.folder;
+    const currentFolder = req.body.currentFolder;
     const owner = Number(req.body.owner);
     const folder = await storagedb.addFolder(name, currentFolder, owner);
     const backURL = req.get('Referer') || '/'; 

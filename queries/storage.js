@@ -5,7 +5,7 @@ async function addFolder(name, parent, ownerId) {
         data: {
             name: name,
             parentId: parent,
-            ownerId: ownerId,
+            ownerId: ownerId
         }
     })
     return folder

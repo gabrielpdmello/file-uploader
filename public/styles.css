@@ -20,6 +20,7 @@ html, body {
 header {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     color: white;
     background-image: linear-gradient(to right, var(--primary), var(--secondary));
     padding: 2rem 5rem;
@@ -28,6 +29,12 @@ header {
 
 h1 {
     margin: 0;
+}
+
+h1 a {
+    text-decoration: none;
+    color: white;
+    /* color: black; */
 }
 
 .landing-main {
@@ -53,7 +60,6 @@ li {
     color: white;
     padding: 0.8rem 3rem;
     border-radius: 50px;
-    margin-bottom: 1.5rem;
     cursor: pointer;
     text-align: center;
     border: none;
@@ -61,9 +67,16 @@ li {
 
 .btn--outline {
     color: black;
-    background-color: transparent;
+    background-color: white;
     box-shadow: inset 0 0 0 3px var(--primary);
 
+}
+
+.btn-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
 }
 
 a {
@@ -106,8 +119,13 @@ a {
     border-right: 6px solid var(--primary);
     padding: 1.5rem;
     height: 100%;
-    min-height: 0; /* CRITICAL: Allows the flex item to shrink below its content size */
-    overflow-y: auto; /* Adds a scrollbar only if the content overflows the available space */
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.sidebar .btn {
+    margin-bottom: 1.5rem;
+
 }
 
 .add-data {
@@ -155,15 +173,50 @@ input[type="File"] {
 .flex-container {
     display: flex;
     gap: 1rem;
+    align-items: center;
 }
 
 table {
     width: 100%;
-    border-collapse: collapse
+    border-collapse: collapse;
+    font-size: large;
 }
 
 tr {
     border-bottom: 1px solid black;
+}
+
+tr .btn-container {
+    visibility: hidden;
+}
+
+tr:hover .btn-container {
+    visibility: visible;
+}
+
+.folder-row {
+    position: relative;
+
+}
+
+.folder-row a {
+    color: black;
+    cursor: unset;
+}
+
+.folder-row a::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+
+}
+
+td {
+    padding: 0.5rem;
 }
 
 thead {
@@ -172,4 +225,52 @@ thead {
 
 .column-name {
     width: 40%;
+}
+
+.icon--download,
+.icon--rename,
+.icon--share,
+.icon--delete,
+.icon--folder,
+.icon--file {
+    display: inline-block;
+    width: 1.5rem;
+    height: 1.5rem;
+    border: none;
+    background-size: cover;
+    background-color: unset;
+}
+
+.icon--download {
+    background-image: url(download-svgrepo-com.svg);
+}
+
+.icon--rename {
+    background-image: url(paper-and-pen-svgrepo-com.svg);
+}
+
+.icon--share {
+    background-image: url(share-nodes-svgrepo-com.svg);
+}
+
+.icon--delete {
+    background-image: url(trash-alt-svgrepo-com.svg);
+}
+
+.icon--folder {
+    background-image: url(folder-svgrepo-com.svg);
+}
+
+.icon--file {
+    background-image: url(file-svgrepo-com.svg);
+}
+
+.btn-icon {
+    position: relative;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.file-path {
+    margin-bottom: 1rem;
 }
