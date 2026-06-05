@@ -19,29 +19,29 @@ const upload = multer({ storage: storage })
 
 async function getRoot(req, res) {
     const root = await storagedb.getRootFolder(req.user.id)
-    const childrenFolders = await storagedb.getChildrenFolders(root[0].id)
-    const files = await storagedb.getFiles(root[0].id);
+    const childrenFolders = await storagedb.getChildrenFolders(root.id)
+    const files = await storagedb.getFiles(root.id);
     res.render('folder', {
         folders: childrenFolders,
         files: files,
-        currentFolder: root[0],
+        currentFolder: root,
         isRoot: true,
         isTrash: false,
-        path: await storagedb.getPath(root[0].id)
+        path: await storagedb.getPath(root.id)
     })
 }
 
 async function getTrash(req, res) {
     const trash = await storagedb.getTrashFolder(req.user.id)
-    const folders = await storagedb.getChildrenFolders(trash[0].id)
-    const files = await storagedb.getFiles(trash[0].id);
+    const folders = await storagedb.getChildrenFolders(trash.id)
+    const files = await storagedb.getFiles(trash.id);
     res.render('folder', {
         folders: folders,
         files: files,
-        currentFolder: trash[0],
+        currentFolder: trash,
         isRoot: false,
         isTrash: true,
-        path: await storagedb.getPath(trash[0].id)
+        path: await storagedb.getPath(trash.id)
     })
 }
 
@@ -54,7 +54,7 @@ async function getFolder(req, res) {
     res.render('folder', {
         folders: childrenFolders,
         files: files,
-        currentFolder: folder[0],
+        currentFolder: folder,
         isRoot: false,
         isTrash: false,
         path: await storagedb.getPath(currentFolderId)
@@ -91,7 +91,7 @@ async function postDownloadFile(req, res) {
     const fileId = req.params.fileId;
     const filePath = path.join(__dirname, `../uploads/${username}`, `${fileId}`);
     const file = await storagedb.getFile(fileId);
-    const filename = file[0].name;
+    const filename = file.name;
     res.download(filePath, filename)
 
 }
@@ -114,11 +114,9 @@ async function postDeleteFile(req, res, next) {
 async function postTrashFile(req, res, next) {
     const username = req.user.username;
     const fileId = req.params.fileId;
-    const filePath = path.join(__dirname, `../uploads/${username}`, `${fileId}`);
     try {
-        const deletedFile = await storagedb.deleteFile(fileId);
-        await fs.unlink(filePath)
-        console.log(`User ${username} deleted file ${deletedFile.name}, id ${deletedFile.id}`)
+        const trashFolder = await storagedb.getTrashFolder(username.id)
+        const trashFile = await storagedb.moveFile(fileId, trashFolder.id);
     } catch (err) {
         next(err)
     }
@@ -143,12 +141,36 @@ async function postDeleteFolder(req, res, next) {
     }
 }
 
+async function postRestoreFile(req, res, next) {
+    const fileId = req.params.fileId;
+    try {
+        const file = await storagedb.restoreFile(fileId);
+        const backURL = req.get('Referer') || '/'; 
+        res.redirect(backURL);
+    } catch (err) {
+        next(err)
+    }
+}
+
 async function postTrashFolder(req, res, next) {
     const username = req.user.username;
     const folderId = req.params.folderId;
     try {
         const trashFolder = await storagedb.getTrashFolder(username.id)
-        const folder = await storagedb.moveFolder(folderId, trashFolder[0].id)
+        const folder = await storagedb.moveFolder(folderId, trashFolder.id)
+        const backURL = req.get('Referer') || '/'; 
+        res.redirect(backURL);
+    } catch (err) {
+        next(err)
+    }
+
+}
+
+async function postRestoreFolder(req, res, next) {
+    const username = req.user.username;
+    const folderId = req.params.folderId;
+    try {
+        const folder = await storagedb.restoreFolder(folderId)
         const backURL = req.get('Referer') || '/'; 
         res.redirect(backURL);
     } catch (err) {
@@ -167,5 +189,7 @@ module.exports = {
     postDeleteFile,
     postTrashFile,
     postDeleteFolder,
-    postTrashFolder
+    postTrashFolder,
+    postRestoreFolder,
+    postRestoreFile
 }

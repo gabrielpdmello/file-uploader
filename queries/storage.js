@@ -19,7 +19,7 @@ async function getChildrenFolders(id) {
 };
 
 async function getRootFolder(ownerId) {
-    const root = await prisma.folder.findMany({
+    const root = await prisma.folder.findFirst({
         where: {
             name: "root",
             parentId: null,
@@ -31,7 +31,7 @@ async function getRootFolder(ownerId) {
 }
 
 async function getTrashFolder(ownerId) {
-    const trash = await prisma.folder.findMany({
+    const trash = await prisma.folder.findFirst({
         where: {
             name: "trash",
             parentId: null,
@@ -43,18 +43,78 @@ async function getTrashFolder(ownerId) {
 }
 
 async function moveFolder(folderId, parentId) {
+    const folder = await getFolder(folderId);
+
     await prisma.folder.update({
         where: {
-            id: folderId
+            id: folder.id
         },
         data: {
-            parentId: parentId
+            parentId: parentId,
+            previousParentId: folder.parentId
+        }
+    })
+}
+
+async function restoreFolder(folderId) {
+    const folder = await getFolder(folderId);
+
+    await prisma.folder.update({
+        where: {
+            id: folder.id
+        },
+        data: {
+            parentId: folder.previousParentId,
+            previousParentId: null
+        }
+    })
+}
+
+
+async function moveFile(fileId, newFolder) {
+    const file = await getFile(fileId);
+    const folder = await getFolder(file.folderId)
+
+    await prisma.file.update({
+        where: {
+            id: file.id
+        },
+        data: {
+            folderId: newFolder,
+            previousFolderId: file.folderId
+        }
+    })
+}
+
+async function restoreFile(fileId) {
+    const file = await getFile(fileId);
+    await prisma.file.update({
+        where: {
+            id: file.id
+        },
+        data: {
+            folderId: file.previousFolderId,
+            previousFolderId: null
+        }
+    })
+}
+
+async function restoreFolder(folderId) {
+    const folder = await getFolder(folderId);
+
+    await prisma.folder.update({
+        where: {
+            id: folder.id
+        },
+        data: {
+            parentId: folder.previousParentId,
+            previousParentId: null
         }
     })
 }
 
 async function getFolder(id) {
-    const folder = await prisma.folder.findMany({
+    const folder = await prisma.folder.findUnique({
         where: {
             id: id,
         }
@@ -73,7 +133,7 @@ async function getFiles(folderId) {
 }
 
 async function getFile(id) {
-    const files = await prisma.file.findMany({
+    const files = await prisma.file.findUnique({
         where: {
             id: id
         }
@@ -159,6 +219,9 @@ module.exports = {
     deleteFile,
     deleteFolder,
     moveFolder,
+    moveFile,
+    restoreFolder,
+    restoreFile,
     getTrashFolder,
     getPath
 }

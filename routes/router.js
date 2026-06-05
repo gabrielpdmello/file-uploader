@@ -42,6 +42,10 @@ router.post('/trash-file/:fileId', storage.postTrashFile);
 
 router.get('/trash', storage.getTrash);
 
-router.use(controller.errorHandler);
+router.post('/restore-folder/:folderId', storage.postRestoreFolder);
+
+router.post('/restore-file/:fileId', storage.postRestoreFile);
+
+// router.use(controller.errorHandler);
 
 module.exports = router;

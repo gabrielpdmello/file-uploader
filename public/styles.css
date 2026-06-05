@@ -34,7 +34,6 @@ h1 {
 h1 a {
     text-decoration: none;
     color: white;
-    /* color: black; */
 }
 
 .landing-main {
@@ -110,7 +109,6 @@ a {
     display: flex;
     width: 100%;
     height: calc(100vh - var(--header-height));
-    flex-wrap: wrap;
 }
 
 .sidebar {
@@ -233,7 +231,8 @@ thead {
 .icon--share,
 .icon--delete,
 .icon--folder,
-.icon--file {
+.icon--file,
+.icon--restore {
     display: inline-block;
     width: 1.5rem;
     height: 1.5rem;
@@ -264,6 +263,10 @@ thead {
 
 .icon--file {
     background-image: url(file-svgrepo-com.svg);
+}
+
+.icon--restore {
+    background-image: url(restore-svgrepo-com.svg);
 }
 
 .btn-icon {

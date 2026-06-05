@@ -61,22 +61,24 @@
                                     <form action="/delete-folder/<%= folder.id %>" method="post">
                                         <button class="btn-icon icon--download" type="submit" title="Download Folder"></button>
                                     </form>
+                                    <% if (path[0].name=="trash") { %>
+                                    <form action="/delete-folder/<%= folder.id %>" method="post">
+                                        <button class="btn-icon icon--delete" type="submit" title="Delete Folder"></button>
+                                    </form>
+                                    <form action="/restore-folder/<%= folder.id %>" method="post">
+                                        <button class="btn-icon icon--restore" type="submit" title="Restore Folder"></button>
+                                    </form>
+                                    <% } else { %>
                                     <form action="/delete-folder/<%= folder.id %>" method="post">
                                         <button class="btn-icon icon--rename" type="submit" title="Rename Folder"></button>
                                     </form>
                                     <form action="/delete-folder/<%= folder.id %>" method="post">
                                         <button class="btn-icon icon--share" type="submit" title="Share Folder"></button>
                                     </form>
-                                    <% if (isTrash) { %>
-                                    <form action="/delete-folder/<%= folder.id %>" method="post">
-                                        <button class="btn-icon icon--delete" type="submit" title="Delete Folder"></button>
-                                    </form>
-                                    <% } else { %>
                                     <form action="/trash-folder/<%= folder.id %>" method="post">
                                         <button class="btn-icon icon--delete" type="submit" title="Move Folder to Trash"></button>
                                     </form>
                                     <% } %>
-
                                 </td>
                             </tr>
                             <% }) %>
@@ -94,17 +96,20 @@
                                     <form action="/download/<%= file.id %>" method="post">
                                         <button class="btn-icon icon--download" type="submit" title="Download File"></button>
                                     </form>
+                                    <% if (path[0].name=="trash") { %>
+                                    <form action="/delete-file/<%= file.id %>" method="post">
+                                        <button class="btn-icon icon--delete" type="submit" title="Delete File"></button>
+                                    </form>
+                                    <form action="/restore-file/<%= file.id %>" method="post">
+                                        <button class="btn-icon icon--restore" type="submit" title="Restore File"></button>
+                                    </form>
+                                    <% } else { %>
                                     <form action="/delete-file/<%= file.id %>" method="post">
                                         <button class="btn-icon icon--rename" type="submit" title="Rename File"></button>
                                     </form>
                                     <form action="/delete-file/<%= file.id %>" method="post">
                                         <button class="btn-icon icon--share" type="submit" title="Share File"></button>
                                     </form>
-                                    <% if (isTrash) { %>
-                                    <form action="/delete-file/<%= file.id %>" method="post">
-                                        <button class="btn-icon icon--delete" type="submit" title="Delete File"></button>
-                                    </form>
-                                    <% } else { %>
                                     <form action="/trash-file/<%= file.id %>" method="post">
                                         <button class="btn-icon icon--delete" type="submit" title="Move File to Trash"></button>
                                     </form>
