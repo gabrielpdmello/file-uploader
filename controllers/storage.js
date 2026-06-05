@@ -19,14 +19,15 @@ const upload = multer({ storage: storage })
 
 async function getRoot(req, res) {
     const root = await storagedb.getRootFolder(req.user.id)
-    const folders = await storagedb.getChildrenFolders(root[0].id)
+    const childrenFolders = await storagedb.getChildrenFolders(root[0].id)
     const files = await storagedb.getFiles(root[0].id);
     res.render('folder', {
-        folders: folders,
+        folders: childrenFolders,
         files: files,
         currentFolder: root[0],
         isRoot: true,
-        isTrash: false
+        isTrash: false,
+        path: await storagedb.getPath(root[0].id)
     })
 }
 
@@ -39,21 +40,25 @@ async function getTrash(req, res) {
         files: files,
         currentFolder: trash[0],
         isRoot: false,
-        isTrash: true
+        isTrash: true,
+        path: await storagedb.getPath(trash[0].id)
     })
 }
 
 async function getFolder(req, res) {
-    const folderId = req.params.folderId;
-    const folder = await storagedb.getFolder(folderId);
-    const folders = await storagedb.getChildrenFolders(folderId)
-    const files = await storagedb.getFiles(folderId);
+    const currentFolderId = req.params.folderId;
+    const folder = await storagedb.getFolder(currentFolderId);
+    const childrenFolders = await storagedb.getChildrenFolders(currentFolderId)
+    const files = await storagedb.getFiles(currentFolderId);
+    await storagedb.getPath(currentFolderId);
     res.render('folder', {
-        folders: folders,
+        folders: childrenFolders,
         files: files,
         currentFolder: folder[0],
         isRoot: false,
-        isTrash: false
+        isTrash: false,
+        path: await storagedb.getPath(currentFolderId)
+
     })
 }
 
@@ -143,7 +148,6 @@ async function postTrashFolder(req, res, next) {
     const folderId = req.params.folderId;
     try {
         const trashFolder = await storagedb.getTrashFolder(username.id)
-        console.log(trashFolder.id)
         const folder = await storagedb.moveFolder(folderId, trashFolder[0].id)
         const backURL = req.get('Referer') || '/'; 
         res.redirect(backURL);

@@ -114,7 +114,8 @@ a {
 }
 
 .sidebar {
-    display: inline-block;
+    display: flex;
+    flex-direction: column;
     width: fit-content;
     border-right: 6px solid var(--primary);
     padding: 1.5rem;

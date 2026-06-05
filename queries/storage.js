@@ -112,13 +112,40 @@ async function deleteFolder(id) {
     )
     SELECT f.* FROM folderTree ft
     join "File" f on (ft.id = f."folderId");
-    `
+    `;
     const folder = await prisma.folder.delete({
         where: {
             id: id,
         }
     })
     return deletedFiles
+}
+
+async function getPath(folderId) {
+    const path = await prisma.$queryRaw`
+    WITH RECURSIVE folder_hierarchy AS (
+    SELECT
+        id,
+        name,
+        "parentId"
+    FROM "Folder"
+    WHERE id = ${folderId}
+
+    UNION ALL
+
+    SELECT
+        f.id,
+        f.name,
+        f."parentId"
+    FROM "Folder" f
+    INNER JOIN folder_hierarchy fh
+        ON f.id = fh."parentId"
+    )
+    SELECT *
+    FROM folder_hierarchy;
+    `;
+    
+    return path.toReversed()
 }
 
 module.exports = {
@@ -132,5 +159,6 @@ module.exports = {
     deleteFile,
     deleteFolder,
     moveFolder,
-    getTrashFolder
+    getTrashFolder,
+    getPath
 }

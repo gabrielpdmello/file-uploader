@@ -7,6 +7,8 @@
     <%- include("partials/header.ejs") %>
     <div class="container">
         <div class="sidebar">
+            <a class="btn d-block" href="/folder">Home</a>
+            <a class="btn d-block" href="/trash">Trash</a>
             <form class="add-data" action="/addfolder" method="post">
                 <label for="name">Add folder</label>
                 <input type="text" name="name" id="name">
@@ -19,10 +21,21 @@
                 <input type="file" id="file" name="file" onchange="form.submit()">
                 <input type="hidden" name="folder" value="<%= currentFolder.id %>">
             </form>
-            <a class="btn w-100" href="/trash">Trash</a>
         </div>
         <div class="file-container">
-            <%- include("partials/path.ejs") %>
+            <div class="file-path">
+                <span>Path:</span>
+                <% if (path[0].name=="root") { %>
+                    <a href="/folder">Home</a>
+                <% } %>
+                <% if (path[0].name=="trash") { %>
+                    <a href="/trash">Trash</a>
+                <% } %>
+                <% path.slice(1).forEach((folder, index) => { %>
+                    <span> / </span>
+                    <a href="/folder/<%= folder.id %>"><%= folder.name %></a>
+                <% }) %>
+            </div>
             <% if (folders.length < 1 && files.length < 1) { %>
             <span class="empty">This folder is empty</span>
             <% } else { %>
