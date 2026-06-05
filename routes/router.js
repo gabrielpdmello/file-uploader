@@ -31,12 +31,16 @@ router.get('/folder', storage.getRoot);
 router.get('/folder/:folderId', storage.getFolder);
 
 router.post('/delete-folder/:folderId', storage.postDeleteFolder);
+router.post('/trash-folder/:folderId', storage.postTrashFolder);
 
 router.post('/addfolder', storage.postAddFolder);
 
 router.post('/download/:fileId', storage.postDownloadFile);
 
-router.post('/delete-fIle/:fileId', storage.postDeleteFile)
+router.post('/delete-file/:fileId', storage.postDeleteFile);
+router.post('/trash-file/:fileId', storage.postTrashFile);
+
+router.get('/trash', storage.getTrash);
 
 router.use(controller.errorHandler);
 

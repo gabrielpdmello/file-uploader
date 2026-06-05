@@ -54,9 +54,15 @@
                                     <form action="/delete-folder/<%= folder.id %>" method="post">
                                         <button class="btn-icon icon--share" type="submit" title="Share Folder"></button>
                                     </form>
+                                    <% if (isTrash) { %>
                                     <form action="/delete-folder/<%= folder.id %>" method="post">
                                         <button class="btn-icon icon--delete" type="submit" title="Delete Folder"></button>
                                     </form>
+                                    <% } else { %>
+                                    <form action="/trash-folder/<%= folder.id %>" method="post">
+                                        <button class="btn-icon icon--delete" type="submit" title="Move Folder to Trash"></button>
+                                    </form>
+                                    <% } %>
 
                                 </td>
                             </tr>
@@ -72,18 +78,24 @@
                                 <td>01/01/2026</td>
                                 <td>321kb</td>
                                 <td class="btn-container">
-                                    <form class="download-form" action="/download/<%= file.id %>" method="post">
+                                    <form action="/download/<%= file.id %>" method="post">
                                         <button class="btn-icon icon--download" type="submit" title="Download File"></button>
                                     </form>
-                                    <form class="delete-form" action="/delete-file/<%= file.id %>" method="post">
+                                    <form action="/delete-file/<%= file.id %>" method="post">
                                         <button class="btn-icon icon--rename" type="submit" title="Rename File"></button>
                                     </form>
-                                    <form class="delete-form" action="/delete-file/<%= file.id %>" method="post">
+                                    <form action="/delete-file/<%= file.id %>" method="post">
                                         <button class="btn-icon icon--share" type="submit" title="Share File"></button>
                                     </form>
-                                    <form class="delete-form" action="/delete-file/<%= file.id %>" method="post">
+                                    <% if (isTrash) { %>
+                                    <form action="/delete-file/<%= file.id %>" method="post">
                                         <button class="btn-icon icon--delete" type="submit" title="Delete File"></button>
                                     </form>
+                                    <% } else { %>
+                                    <form action="/trash-file/<%= file.id %>" method="post">
+                                        <button class="btn-icon icon--delete" type="submit" title="Move File to Trash"></button>
+                                    </form>
+                                    <% } %>
 
                                 </td>
                             </tr>

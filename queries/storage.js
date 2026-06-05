@@ -21,12 +21,36 @@ async function getChildrenFolders(id) {
 async function getRootFolder(ownerId) {
     const root = await prisma.folder.findMany({
         where: {
+            name: "root",
             parentId: null,
             ownerId: ownerId
         }
     })
 
     return root
+}
+
+async function getTrashFolder(ownerId) {
+    const trash = await prisma.folder.findMany({
+        where: {
+            name: "trash",
+            parentId: null,
+            ownerId: ownerId
+        }
+    })
+
+    return trash
+}
+
+async function moveFolder(folderId, parentId) {
+    await prisma.folder.update({
+        where: {
+            id: folderId
+        },
+        data: {
+            parentId: parentId
+        }
+    })
 }
 
 async function getFolder(id) {
@@ -106,5 +130,7 @@ module.exports = {
     getFile,
     addFile,
     deleteFile,
-    deleteFolder
+    deleteFolder,
+    moveFolder,
+    getTrashFolder
 }

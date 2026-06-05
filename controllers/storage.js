@@ -25,7 +25,21 @@ async function getRoot(req, res) {
         folders: folders,
         files: files,
         currentFolder: root[0],
-        isRoot: true
+        isRoot: true,
+        isTrash: false
+    })
+}
+
+async function getTrash(req, res) {
+    const trash = await storagedb.getTrashFolder(req.user.id)
+    const folders = await storagedb.getChildrenFolders(trash[0].id)
+    const files = await storagedb.getFiles(trash[0].id);
+    res.render('folder', {
+        folders: folders,
+        files: files,
+        currentFolder: trash[0],
+        isRoot: false,
+        isTrash: true
     })
 }
 
@@ -38,7 +52,8 @@ async function getFolder(req, res) {
         folders: folders,
         files: files,
         currentFolder: folder[0],
-        isRoot: false
+        isRoot: false,
+        isTrash: false
     })
 }
 
@@ -91,6 +106,21 @@ async function postDeleteFile(req, res, next) {
     res.redirect(backURL);
 }
 
+async function postTrashFile(req, res, next) {
+    const username = req.user.username;
+    const fileId = req.params.fileId;
+    const filePath = path.join(__dirname, `../uploads/${username}`, `${fileId}`);
+    try {
+        const deletedFile = await storagedb.deleteFile(fileId);
+        await fs.unlink(filePath)
+        console.log(`User ${username} deleted file ${deletedFile.name}, id ${deletedFile.id}`)
+    } catch (err) {
+        next(err)
+    }
+    const backURL = req.get('Referer') || '/'; 
+    res.redirect(backURL);
+}
+
 async function postDeleteFolder(req, res, next) {
     const username = req.user.username;
     const folderId = req.params.folderId;
@@ -106,16 +136,32 @@ async function postDeleteFolder(req, res, next) {
     } catch (err) {
         next(err)
     }
+}
+
+async function postTrashFolder(req, res, next) {
+    const username = req.user.username;
+    const folderId = req.params.folderId;
+    try {
+        const trashFolder = await storagedb.getTrashFolder(username.id)
+        console.log(trashFolder.id)
+        const folder = await storagedb.moveFolder(folderId, trashFolder[0].id)
+        const backURL = req.get('Referer') || '/'; 
+        res.redirect(backURL);
+    } catch (err) {
+        next(err)
+    }
 
 }
 
 module.exports = {
     getRoot,
+    getTrash,
     getFolder,
     postAddFolder,
     postUpload,
     postDownloadFile,
     postDeleteFile,
+    postTrashFile,
     postDeleteFolder,
-
+    postTrashFolder
 }
