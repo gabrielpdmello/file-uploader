@@ -133,15 +133,15 @@ async function getFiles(folderId) {
 }
 
 async function getFile(id) {
-    const files = await prisma.file.findUnique({
+    const file = await prisma.file.findUnique({
         where: {
             id: id
         }
     })
-    return files
+    return file
 }
 
-async function addFile(id, name, folderId) {
+async function addFile(id, name, folderId, size) {
     const file = await prisma.file.create({
         data: {
             id: id,
@@ -149,8 +149,52 @@ async function addFile(id, name, folderId) {
                 connect: { id: folderId }
             },
             name: name,
+            size: size
         }
     })
+}
+
+async function increaseFolderSize(folderId, size) {
+    const folder = await getFolder(folderId);
+    await prisma.folder.update({
+        where: {
+            id: folderId
+        },
+        data: {
+            size: folder.size + size
+        }
+    })
+
+    await updateFolderSize(folderId, size);
+}
+
+async function decreaseFolderSize(folderId, size) {
+    const folder = await getFolder(folderId);
+    await prisma.folder.update({
+        where: {
+            id: folder.id
+        },
+        data: {
+            size: folder.size - size
+        }
+    })
+    await updateFolderSize(folder.id, -size);
+}
+async function updateFolderSize(folderId, size) {
+    // update folder sizes recursively, from specified folder until root
+    const updateFolder = await prisma.$queryRaw`
+    WITH RECURSIVE folder_hierarchy AS (
+        SELECT id, name, "parentId", "size"  FROM "Folder"
+        WHERE id = ${folderId}
+        UNION ALL
+        SELECT f.id, f.name, f."parentId", ${size} + f.size FROM "Folder" f
+        INNER JOIN folder_hierarchy fh ON f.id = fh."parentId"
+    )
+    update "Folder" f
+    set "size" = fh."size"
+    from folder_hierarchy fh
+    where f.id = fh.id;
+    `;
 }
 
 async function deleteFile(id) {
@@ -223,5 +267,7 @@ module.exports = {
     restoreFolder,
     restoreFile,
     getTrashFolder,
-    getPath
+    getPath,
+    increaseFolderSize,
+    decreaseFolderSize
 }

@@ -56,7 +56,7 @@
                                     <a href="/folder/<%= folder.id %>"><%= folder.name %></a>
                                 </td>
                                 <td>01/01/2026</td>
-                                <td>321kb</td>
+                                <td><%= filesize(folder.size) %></td>
                                 <td class="btn-container">
                                     <form action="/delete-folder/<%= folder.id %>" method="post">
                                         <button class="btn-icon icon--download" type="submit" title="Download Folder"></button>
@@ -77,6 +77,7 @@
                                     </form>
                                     <form action="/trash-folder/<%= folder.id %>" method="post">
                                         <button class="btn-icon icon--delete" type="submit" title="Move Folder to Trash"></button>
+                                        <input type="hidden" name="currentFolder" value="<%= currentFolder.id %>">
                                     </form>
                                     <% } %>
                                 </td>
@@ -91,7 +92,7 @@
                                     <%= file.name %>
                                 </td>
                                 <td>01/01/2026</td>
-                                <td>321kb</td>
+                                <td><%= filesize(file.size) %></td>
                                 <td class="btn-container">
                                     <form action="/download/<%= file.id %>" method="post">
                                         <button class="btn-icon icon--download" type="submit" title="Download File"></button>
@@ -112,6 +113,7 @@
                                     </form>
                                     <form action="/trash-file/<%= file.id %>" method="post">
                                         <button class="btn-icon icon--delete" type="submit" title="Move File to Trash"></button>
+                                        <input type="hidden" name="currentFolder" value="<%= currentFolder.id %>">
                                     </form>
                                     <% } %>
 

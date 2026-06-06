@@ -3,6 +3,7 @@ const storagedb = require('../queries/storage');
 const path = require('path');
 const { randomUUID } = require('crypto');
 const multer = require('multer');
+const { filesize, partial } = require('filesize');
 const storage = multer.diskStorage({
     destination: async function destination(req, file, cb) {
         const path = `./uploads/${req.user.username}`;
@@ -27,7 +28,8 @@ async function getRoot(req, res) {
         currentFolder: root,
         isRoot: true,
         isTrash: false,
-        path: await storagedb.getPath(root.id)
+        path: await storagedb.getPath(root.id),
+        filesize: filesize
     })
 }
 
@@ -41,7 +43,8 @@ async function getTrash(req, res) {
         currentFolder: trash,
         isRoot: false,
         isTrash: true,
-        path: await storagedb.getPath(trash.id)
+        path: await storagedb.getPath(trash.id),
+        filesize: filesize
     })
 }
 
@@ -57,8 +60,8 @@ async function getFolder(req, res) {
         currentFolder: folder,
         isRoot: false,
         isTrash: false,
-        path: await storagedb.getPath(currentFolderId)
-
+        path: await storagedb.getPath(currentFolderId),
+        filesize: filesize
     })
 }
 
@@ -68,21 +71,26 @@ async function postAddFolder(req, res, next) {
     const currentFolder = req.body.currentFolder;
     const owner = Number(req.body.owner);
     const folder = await storagedb.addFolder(name, currentFolder, owner);
-    const backURL = req.get('Referer') || '/'; 
+    const backURL = req.get('Referer') || '/';
     res.redirect(backURL);
 
 }
 
 const postUpload = [
     upload.single('file'),
-    (req, res, next) => {
+    async (req, res, next) => {
         const filename = req.file.filename;
+        const filesize = req.file.size;
         const originalname = req.file.originalname;
         const currentFolder = req.body.folder;
-        storagedb.addFile(filename, originalname, currentFolder)
-        const backURL = req.get('Referer') || '/'; 
-    res.redirect(backURL);
-
+        try {
+            await storagedb.addFile(filename, originalname, currentFolder, filesize)
+            await storagedb.increaseFolderSize(currentFolder, filesize)
+            const backURL = req.get('Referer') || '/';
+            res.redirect(backURL);
+        } catch (err) {
+            next(err)
+        }
     }
 ]
 
@@ -107,22 +115,43 @@ async function postDeleteFile(req, res, next) {
     } catch (err) {
         next(err)
     }
-    const backURL = req.get('Referer') || '/'; 
+    const backURL = req.get('Referer') || '/';
     res.redirect(backURL);
 }
 
 async function postTrashFile(req, res, next) {
     const username = req.user.username;
     const fileId = req.params.fileId;
+    const currentFolder = req.body.currentFolder;
     try {
+        const file = await storagedb.getFile(fileId)
+        const updateSize = await storagedb.decreaseFolderSize(file.folderId, file.size)
         const trashFolder = await storagedb.getTrashFolder(username.id)
         const trashFile = await storagedb.moveFile(fileId, trashFolder.id);
     } catch (err) {
         next(err)
     }
-    const backURL = req.get('Referer') || '/'; 
+    const backURL = req.get('Referer') || '/';
     res.redirect(backURL);
 }
+
+async function postTrashFolder(req, res, next) {
+    const username = req.user.username;
+    const folderId = req.params.folderId;
+    const currentFolder = req.body.currentFolder
+    try {
+        const trashFolder = await storagedb.getTrashFolder(username.id)
+        const folder = await storagedb.getFolder(folderId)
+        await storagedb.moveFolder(folder.id, trashFolder.id)
+        const updateSize = await storagedb.decreaseFolderSize(currentFolder, folder.size)
+        const backURL = req.get('Referer') || '/';
+        res.redirect(backURL);
+    } catch (err) {
+        next(err)
+    }
+
+}
+
 
 async function postDeleteFolder(req, res, next) {
     const username = req.user.username;
@@ -134,7 +163,7 @@ async function postDeleteFolder(req, res, next) {
             await fs.unlink(filePath)
             console.log(`User ${username} deleted file ${file.name}, id ${file.id}`)
         })
-        const backURL = req.get('Referer') || '/'; 
+        const backURL = req.get('Referer') || '/';
         res.redirect(backURL);
     } catch (err) {
         next(err)
@@ -144,34 +173,25 @@ async function postDeleteFolder(req, res, next) {
 async function postRestoreFile(req, res, next) {
     const fileId = req.params.fileId;
     try {
-        const file = await storagedb.restoreFile(fileId);
-        const backURL = req.get('Referer') || '/'; 
+        const file = await storagedb.getFile(fileId);
+        await storagedb.restoreFile(file.id);
+        await storagedb.increaseFolderSize(file.previousFolderId, file.size)
+        const backURL = req.get('Referer') || '/';
         res.redirect(backURL);
     } catch (err) {
         next(err)
     }
-}
-
-async function postTrashFolder(req, res, next) {
-    const username = req.user.username;
-    const folderId = req.params.folderId;
-    try {
-        const trashFolder = await storagedb.getTrashFolder(username.id)
-        const folder = await storagedb.moveFolder(folderId, trashFolder.id)
-        const backURL = req.get('Referer') || '/'; 
-        res.redirect(backURL);
-    } catch (err) {
-        next(err)
-    }
-
 }
 
 async function postRestoreFolder(req, res, next) {
     const username = req.user.username;
     const folderId = req.params.folderId;
+    
     try {
-        const folder = await storagedb.restoreFolder(folderId)
-        const backURL = req.get('Referer') || '/'; 
+        const folder = await storagedb.getFolder(folderId)
+        await storagedb.increaseFolderSize(folder.previousParentId, folder.size)
+        await storagedb.restoreFolder(folderId)
+        const backURL = req.get('Referer') || '/';
         res.redirect(backURL);
     } catch (err) {
         next(err)

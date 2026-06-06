@@ -32,6 +32,7 @@ model Folder {
   user User @relation(fields: [ownerId], references: [id])
   ownerId Int
   files File[]
+  size Int @default(0)
 }
 
 model File {
@@ -40,4 +41,5 @@ model File {
   folder Folder @relation(fields: [folderId], references: [id], onDelete: Cascade)
   folderId String
   previousFolderId String?
+  size Int?
 }
