@@ -252,6 +252,28 @@ async function getPath(folderId) {
     return path.toReversed()
 }
 
+async function renameFile(id, name) {
+    await prisma.file.update({
+        where: {
+            id: id,
+        },
+        data: {
+            name: name
+        }
+    })
+}
+
+async function renameFolder(id, name) {
+    await prisma.folder.update({
+        where: {
+            id: id,
+        },
+        data: {
+            name: name
+        }
+    })
+}
+
 module.exports = {
     addFolder,
     getChildrenFolders,
@@ -269,5 +291,7 @@ module.exports = {
     getTrashFolder,
     getPath,
     increaseFolderSize,
-    decreaseFolderSize
+    decreaseFolderSize,
+    renameFile,
+    renameFolder
 }

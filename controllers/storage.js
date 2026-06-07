@@ -18,51 +18,35 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage })
 
-async function getRoot(req, res) {
-    const root = await storagedb.getRootFolder(req.user.id)
-    const childrenFolders = await storagedb.getChildrenFolders(root.id)
-    const files = await storagedb.getFiles(root.id);
-    res.render('folder', {
-        folders: childrenFolders,
-        files: files,
-        currentFolder: root,
-        isRoot: true,
-        isTrash: false,
-        path: await storagedb.getPath(root.id),
-        filesize: filesize
-    })
-}
-
-async function getTrash(req, res) {
-    const trash = await storagedb.getTrashFolder(req.user.id)
-    const folders = await storagedb.getChildrenFolders(trash.id)
-    const files = await storagedb.getFiles(trash.id);
-    res.render('folder', {
-        folders: folders,
-        files: files,
-        currentFolder: trash,
-        isRoot: false,
-        isTrash: true,
-        path: await storagedb.getPath(trash.id),
-        filesize: filesize
-    })
-}
-
-async function getFolder(req, res) {
-    const currentFolderId = req.params.folderId;
-    const folder = await storagedb.getFolder(currentFolderId);
-    const childrenFolders = await storagedb.getChildrenFolders(currentFolderId)
-    const files = await storagedb.getFiles(currentFolderId);
-    await storagedb.getPath(currentFolderId);
-    res.render('folder', {
-        folders: childrenFolders,
-        files: files,
-        currentFolder: folder,
-        isRoot: false,
-        isTrash: false,
-        path: await storagedb.getPath(currentFolderId),
-        filesize: filesize
-    })
+async function getFolder(req, res, next) {
+    const folderId = req.params.folderId;
+    try {
+        let folder;
+        if (folderId == "root") {
+            folder = await storagedb.getRootFolder(req.user.id);
+        } else if (folderId == "trash") {
+            folder = await storagedb.getTrashFolder(req.user.id);
+        } else {
+            folder = await storagedb.getFolder(folderId);
+        }
+        const childrenFolders = await storagedb.getChildrenFolders(folder.id)
+        const files = await storagedb.getFiles(folder.id);
+        const isRoot = folder.name === "root";
+        const isTrash = folder.name === "trash";
+        res.render('folder', {
+            folders: childrenFolders,
+            files: files,
+            currentFolder: folder,
+            isRoot: isRoot,
+            isTrash: isTrash,
+            path: await storagedb.getPath(folder.id),
+            filesize: filesize,
+            editItemId: false,
+            editType: false
+        })
+    } catch (err) {
+        next(err)
+    }
 }
 
 
@@ -199,9 +183,55 @@ async function postRestoreFolder(req, res, next) {
 
 }
 
+async function postEditMode(req, res, next) {
+    const item = req.params.itemId;
+    const editType = req.body.type;
+    const currentFolderId = req.body.currentFolder;
+    try {
+        const folder = await storagedb.getFolder(currentFolderId);
+        const childrenFolders = await storagedb.getChildrenFolders(currentFolderId)
+        const files = await storagedb.getFiles(currentFolderId);
+        res.render('folder', {
+            folders: childrenFolders,
+            files: files,
+            currentFolder: folder,
+            isRoot: false,
+            isTrash: false,
+            path: await storagedb.getPath(currentFolderId),
+            filesize: filesize,
+            editItemId: item,
+            editType: editType
+        })
+    } catch(err) {
+        next(err)
+    }
+}
+
+async function postRenameFile(req, res, next) {
+    const fileId = req.params.fileId;
+    const name = req.body.name;
+    const currentFolderId = req.body.currentFolder;
+    try {
+        await storagedb.renameFile(fileId, name)
+        res.redirect(`/folder/${currentFolderId}`)
+    } catch (err) {
+        next(err)
+    }
+}
+
+async function postRenameFolder(req, res, next) {
+    const folderId = req.params.folderId;
+    const name = req.body.name;
+    const currentFolderId = req.body.currentFolder;
+    try {
+        await storagedb.renameFolder(folderId, name)
+        res.redirect(`/folder/${currentFolderId}`)
+    } catch (err) {
+        next(err)
+    }
+}
+
 module.exports = {
-    getRoot,
-    getTrash,
     getFolder,
     postAddFolder,
     postUpload,
@@ -211,5 +241,8 @@ module.exports = {
     postDeleteFolder,
     postTrashFolder,
     postRestoreFolder,
-    postRestoreFile
+    postRestoreFile,
+    postRenameFile,
+    postRenameFolder,
+    postEditMode
 }

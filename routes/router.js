@@ -26,8 +26,6 @@ router.get("/logout", controller.logout);
 router.get('/upload', controller.getUpload);
 router.post('/upload', storage.postUpload);
 
-router.get('/folder', storage.getRoot);
-
 router.get('/folder/:folderId', storage.getFolder);
 
 router.post('/delete-folder/:folderId', storage.postDeleteFolder);
@@ -40,11 +38,15 @@ router.post('/download/:fileId', storage.postDownloadFile);
 router.post('/delete-file/:fileId', storage.postDeleteFile);
 router.post('/trash-file/:fileId', storage.postTrashFile);
 
-router.get('/trash', storage.getTrash);
-
 router.post('/restore-folder/:folderId', storage.postRestoreFolder);
 
 router.post('/restore-file/:fileId', storage.postRestoreFile);
+
+router.post('/rename-file/:fileId', storage.postRenameFile);
+
+router.post('/edit/:itemId', storage.postEditMode);
+
+router.post('/rename-folder/:folderId', storage.postRenameFolder);
 
 // router.use(controller.errorHandler);
 

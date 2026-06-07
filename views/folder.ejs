@@ -7,8 +7,8 @@
     <%- include("partials/header.ejs") %>
     <div class="container">
         <div class="sidebar">
-            <a class="btn d-block" href="/folder">Home</a>
-            <a class="btn d-block" href="/trash">Trash</a>
+            <a class="btn d-block" href="/folder/root">Home</a>
+            <a class="btn d-block" href="/folder/trash">Trash</a>
             <form class="add-data" action="/addfolder" method="post">
                 <label for="name">Add folder</label>
                 <input type="text" name="name" id="name">
@@ -26,10 +26,10 @@
             <div class="file-path">
                 <span>Path:</span>
                 <% if (path[0].name=="root") { %>
-                    <a href="/folder">Home</a>
+                    <a href="/folder/root">Home</a>
                 <% } %>
                 <% if (path[0].name=="trash") { %>
-                    <a href="/trash">Trash</a>
+                    <a href="/folder/trash">Trash</a>
                 <% } %>
                 <% path.slice(1).forEach((folder, index) => { %>
                     <span> / </span>
@@ -53,7 +53,15 @@
                             <tr class="folder-row">
                                 <td class="flex-container">
                                     <span class="icon--folder"></span>
-                                    <a href="/folder/<%= folder.id %>"><%= folder.name %></a>
+                                    <% if (editItemId == folder.id && editType == "rename") { %>
+                                        <form class="edit-form" action="/rename-folder/<%= folder.id %>" method="post">
+                                            <input type="text" id="name" name="name" value="<%= folder.name %>">
+                                            <input type="hidden" name="currentFolder" value="<%= currentFolder.id %>">
+                                            <button class="btn--small" type="submit">Rename</button>
+                                        </form>
+                                    <% } else { %>
+                                    <a class="item-name" href="/folder/<%= folder.id %>"><%= folder.name %></a>
+                                    <% } %>
                                 </td>
                                 <td>01/01/2026</td>
                                 <td><%= filesize(folder.size) %></td>
@@ -69,7 +77,9 @@
                                         <button class="btn-icon icon--restore" type="submit" title="Restore Folder"></button>
                                     </form>
                                     <% } else { %>
-                                    <form action="/delete-folder/<%= folder.id %>" method="post">
+                                    <form action="/edit/<%= folder.id %>" method="post">
+                                        <input type="hidden" name="type" value="rename">
+                                        <input type="hidden" name="currentFolder" value="<%= currentFolder.id %>">
                                         <button class="btn-icon icon--rename" type="submit" title="Rename Folder"></button>
                                     </form>
                                     <form action="/delete-folder/<%= folder.id %>" method="post">
@@ -89,7 +99,15 @@
                             <tr>
                                 <td class="flex-container">
                                     <span class="icon--file"></span>
-                                    <%= file.name %>
+                                    <% if (editItemId == file.id && editType == "rename") { %>
+                                        <form class="edit-form" action="/rename-file/<%= file.id %>" method="post">
+                                            <input type="text" id="name" name="name" value="<%= file.name %>">
+                                            <input type="hidden" name="currentFolder" value="<%= currentFolder.id %>">
+                                            <button class="btn--small" type="submit">Rename</button>
+                                        </form>
+                                    <% } else { %>
+                                        <span class="item-name"><%= file.name %></span>
+                                    <% } %>
                                 </td>
                                 <td>01/01/2026</td>
                                 <td><%= filesize(file.size) %></td>
@@ -105,7 +123,9 @@
                                         <button class="btn-icon icon--restore" type="submit" title="Restore File"></button>
                                     </form>
                                     <% } else { %>
-                                    <form action="/delete-file/<%= file.id %>" method="post">
+                                    <form action="/edit/<%= file.id %>" method="post">
+                                        <input type="hidden" name="type" value="rename">
+                                        <input type="hidden" name="currentFolder" value="<%= currentFolder.id %>">
                                         <button class="btn-icon icon--rename" type="submit" title="Rename File"></button>
                                     </form>
                                     <form action="/delete-file/<%= file.id %>" method="post">

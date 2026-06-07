@@ -53,7 +53,7 @@ li {
     margin-bottom: 0.5rem;
 }
 
-.btn, .btn--outline {
+.btn, .btn--outline, .btn--small {
     display: inline-block;
     background-color: var(--primary);
     color: white;
@@ -69,6 +69,10 @@ li {
     background-color: white;
     box-shadow: inset 0 0 0 3px var(--primary);
 
+}
+
+.btn--small {
+    padding: 0.2rem 0.4rem;
 }
 
 .btn-container {
@@ -185,6 +189,21 @@ tr {
     border-bottom: 1px solid black;
 }
 
+tr .edit-form {
+    width: 100%;
+}
+
+tr input {
+    font-size: inherit;
+    border: none;
+    box-shadow: 0 0 0 2px  var(--primary);
+    padding: 0.2rem 0.5rem;
+    width: 100%;
+    margin-bottom: 0.5rem;
+    border-radius: 5px;
+    
+}
+
 tr .btn-container {
     visibility: hidden;
 }
@@ -277,4 +296,8 @@ thead {
 
 .file-path {
     margin-bottom: 1rem;
+}
+
+.item-name {
+    margin-left: 0.5rem;
 }
