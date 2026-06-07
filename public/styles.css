@@ -118,7 +118,7 @@ a {
 .sidebar {
     display: flex;
     flex-direction: column;
-    width: fit-content;
+    min-width: fit-content;
     border-right: 6px solid var(--primary);
     padding: 1.5rem;
     height: 100%;
@@ -180,6 +180,7 @@ input[type="File"] {
 }
 
 table {
+    table-layout: fixed;
     width: 100%;
     border-collapse: collapse;
     font-size: large;
@@ -222,7 +223,7 @@ tr:hover .btn-container {
     cursor: unset;
 }
 
-.folder-row a::after {
+.folder-link::after {
     content: "";
     position: absolute;
     top: 0;
@@ -258,6 +259,7 @@ thead {
     border: none;
     background-size: cover;
     background-color: unset;
+    flex-shrink: 0;
 }
 
 .icon--download {
@@ -296,8 +298,20 @@ thead {
 
 .file-path {
     margin-bottom: 1rem;
+    display: inline-block;
+    max-width: 100%;
+}
+
+.file-path a {
+    text-wrap: wrap;
+    overflow-wrap: break-word;
 }
 
 .item-name {
     margin-left: 0.5rem;
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
 }

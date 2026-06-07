@@ -3,7 +3,7 @@
     <span class="btn-container">
         <% if (locals.currentUser) { %>
         <span>Welcome, <%= locals.currentUser.name %></span>
-        <a class="btn" href="/folder">Home</a>
+        <a class="btn" href="/folder/root">Home</a>
         <a class="btn--outline" href="/logout">Log out</a>
         <% } else { %>
         <a class="btn" href="/login">Login</a>

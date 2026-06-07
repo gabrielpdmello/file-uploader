@@ -20,6 +20,8 @@ const upload = multer({ storage: storage })
 
 async function getFolder(req, res, next) {
     const folderId = req.params.folderId;
+    const itemId = req.query.itemId;
+    const editType = req.query.editType;
     try {
         let folder;
         if (folderId == "root") {
@@ -41,8 +43,8 @@ async function getFolder(req, res, next) {
             isTrash: isTrash,
             path: await storagedb.getPath(folder.id),
             filesize: filesize,
-            editItemId: false,
-            editType: false
+            editItemId: itemId,
+            editType: editType
         })
     } catch (err) {
         next(err)
@@ -183,30 +185,6 @@ async function postRestoreFolder(req, res, next) {
 
 }
 
-async function postEditMode(req, res, next) {
-    const item = req.params.itemId;
-    const editType = req.body.type;
-    const currentFolderId = req.body.currentFolder;
-    try {
-        const folder = await storagedb.getFolder(currentFolderId);
-        const childrenFolders = await storagedb.getChildrenFolders(currentFolderId)
-        const files = await storagedb.getFiles(currentFolderId);
-        res.render('folder', {
-            folders: childrenFolders,
-            files: files,
-            currentFolder: folder,
-            isRoot: false,
-            isTrash: false,
-            path: await storagedb.getPath(currentFolderId),
-            filesize: filesize,
-            editItemId: item,
-            editType: editType
-        })
-    } catch(err) {
-        next(err)
-    }
-}
-
 async function postRenameFile(req, res, next) {
     const fileId = req.params.fileId;
     const name = req.body.name;
@@ -243,6 +221,5 @@ module.exports = {
     postRestoreFolder,
     postRestoreFile,
     postRenameFile,
-    postRenameFolder,
-    postEditMode
+    postRenameFolder
 }

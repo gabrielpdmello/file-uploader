@@ -13,6 +13,10 @@ async function index(req, res) {
     res.render("index", {repoUrl: process.env.REPOURL});
 }
 
+async function getRoot(req, res) {
+    res.redirect("/folder/root");
+}
+
 function getSignup(req, res) {
     res.render("signup");
 }
@@ -55,6 +59,7 @@ function errorHandler(err, req, res, next) {
 module.exports = {
     locals,
     index,
+    getRoot,
     getSignup,
     postSignup,
     getLogin,

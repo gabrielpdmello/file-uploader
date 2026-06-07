@@ -10,13 +10,15 @@ router.use(controller.locals);
 
 router.get('/', controller.index);
 
+router.get('/folder', controller.getRoot);
+
 router.get('/signup', controller.getSignup);
 router.post('/signup', controller.postSignup);
 
 router.get('/login', controller.getLogin);
 router.post("/login",
     passport.authenticate("local", {
-        successRedirect: "/folder",
+        successRedirect: "/folder/root",
         failureRedirect: "/login",
     })
 );
@@ -43,8 +45,6 @@ router.post('/restore-folder/:folderId', storage.postRestoreFolder);
 router.post('/restore-file/:fileId', storage.postRestoreFile);
 
 router.post('/rename-file/:fileId', storage.postRenameFile);
-
-router.post('/edit/:itemId', storage.postEditMode);
 
 router.post('/rename-folder/:folderId', storage.postRenameFolder);
 
