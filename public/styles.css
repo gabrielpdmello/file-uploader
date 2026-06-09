@@ -111,7 +111,7 @@ a {
 
 .container {
     display: flex;
-    width: 100%;
+    max-width: 100%;
     height: calc(100vh - var(--header-height));
 }
 
@@ -157,9 +157,9 @@ input[type="File"] {
 
 .file-container {
     position: relative;
-    flex-grow: 1;
     padding: 2rem;
-
+    min-width: 0;
+    width: 100%;
 }
 
 .empty {
