@@ -45,8 +45,11 @@ router.post('/restore-folder/:folderId', storage.postRestoreFolder);
 router.post('/restore-file/:fileId', storage.postRestoreFile);
 
 router.post('/rename-file/:fileId', storage.postRenameFile);
-
 router.post('/rename-folder/:folderId', storage.postRenameFolder);
+
+router.post('/move-folder/:folderId', storage.postMoveFolder);
+router.post('/move-file/:fileId', storage.postMoveFile);
+
 
 // router.use(controller.errorHandler);
 

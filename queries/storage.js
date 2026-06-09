@@ -70,17 +70,15 @@ async function restoreFolder(folderId) {
     })
 }
 
-
-async function moveFile(fileId, newFolder) {
-    const file = await getFile(fileId);
-    const folder = await getFolder(file.folderId)
+async function moveFile(fileId, folderId) {
+    const file = await getFile(fileId)
 
     await prisma.file.update({
         where: {
             id: file.id
         },
         data: {
-            folderId: newFolder,
+            folderId: folderId,
             previousFolderId: file.folderId
         }
     })

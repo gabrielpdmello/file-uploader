@@ -9,9 +9,6 @@
     font-family: Arial, Helvetica, sans-serif;
 }
 
-
-
-
 html, body {
     margin: 0;
     width: 100%;
@@ -62,6 +59,7 @@ li {
     cursor: pointer;
     text-align: center;
     border: none;
+    font-size: 1rem;
 }
 
 .btn--outline {
@@ -72,7 +70,7 @@ li {
 }
 
 .btn--small {
-    padding: 0.2rem 0.4rem;
+    padding: 0.2rem 0.8rem;
 }
 
 .btn-container {
@@ -218,11 +216,6 @@ tr:hover .btn-container {
 
 }
 
-.folder-row a {
-    color: black;
-    cursor: unset;
-}
-
 .folder-link::after {
     content: "";
     position: absolute;
@@ -252,7 +245,8 @@ thead {
 .icon--delete,
 .icon--folder,
 .icon--file,
-.icon--restore {
+.icon--restore,
+.icon--move {
     display: inline-block;
     width: 1.5rem;
     height: 1.5rem;
@@ -290,6 +284,12 @@ thead {
     background-image: url(restore-svgrepo-com.svg);
 }
 
+.icon--move {
+    background-image: url(folder-arrow-right-svgrepo-com.svg);
+    width: 1.8rem;
+    height: 1.8rem;
+}
+
 .btn-icon {
     position: relative;
     cursor: pointer;
@@ -313,5 +313,16 @@ thead {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    color: black;
+    cursor: unset;
 
+}
+
+.moving-item {
+    margin-bottom: 1rem
+}
+
+.moving-item span {
+    display: inline-block;
+    margin-bottom: 0.6rem;
 }

@@ -20,8 +20,9 @@ const upload = multer({ storage: storage })
 
 async function getFolder(req, res, next) {
     const folderId = req.params.folderId;
-    const itemId = req.query.itemId;
-    const editType = req.query.editType;
+    const editItemId = req.query.editItemId;
+    const editItemType = req.query.editItemType;
+    let editType = req.query.editType;
     try {
         let folder;
         if (folderId == "root") {
@@ -31,10 +32,17 @@ async function getFolder(req, res, next) {
         } else {
             folder = await storagedb.getFolder(folderId);
         }
+        let editItem;
+        if (editItemType == "folder") {
+            editItem = await storagedb.getFolder(editItemId);
+        } else if (editItemType == "file") {
+            editItem = await storagedb.getFile(editItemId);
+        }
         const childrenFolders = await storagedb.getChildrenFolders(folder.id)
         const files = await storagedb.getFiles(folder.id);
         const isRoot = folder.name === "root";
         const isTrash = folder.name === "trash";
+
         res.render('folder', {
             folders: childrenFolders,
             files: files,
@@ -43,8 +51,10 @@ async function getFolder(req, res, next) {
             isTrash: isTrash,
             path: await storagedb.getPath(folder.id),
             filesize: filesize,
-            editItemId: itemId,
-            editType: editType
+            editItem: editItem,
+            editItemType: editItemType,
+            editType: editType,
+            
         })
     } catch (err) {
         next(err)
@@ -209,6 +219,28 @@ async function postRenameFolder(req, res, next) {
     }
 }
 
+async function postMoveFile(req, res, next) {
+    const fileId = req.params.fileId;
+    const currentFolderId = req.body.currentFolder;
+    try {
+        await storagedb.moveFile(fileId, currentFolderId)
+        res.redirect(`/folder/${currentFolderId}`)
+    } catch (err) {
+        next(err)
+    }
+}
+
+async function postMoveFolder(req, res, next) {
+    const folderId = req.params.folderId;
+    const currentFolderId = req.body.currentFolder;
+    try {
+        await storagedb.moveFolder(folderId, currentFolderId)
+        res.redirect(`/folder/${currentFolderId}`)
+    } catch (err) {
+        next(err)
+    }
+}
+
 module.exports = {
     getFolder,
     postAddFolder,
@@ -221,5 +253,7 @@ module.exports = {
     postRestoreFolder,
     postRestoreFile,
     postRenameFile,
-    postRenameFolder
+    postRenameFolder,
+    postMoveFolder,
+    postMoveFile
 }
