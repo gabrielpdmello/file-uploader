@@ -73,20 +73,26 @@ async function postAddFolder(req, res, next) {
 }
 
 const postUpload = [
-    upload.single('file'),
+    upload.array('files'),
     async (req, res, next) => {
-        const filename = req.file.filename;
-        const filesize = req.file.size;
-        const originalname = req.file.originalname;
-        const currentFolder = req.body.folder;
-        try {
-            await storagedb.addFile(filename, originalname, currentFolder, filesize)
-            await storagedb.increaseFolderSize(currentFolder, filesize)
-            const backURL = req.get('Referer') || '/';
-            res.redirect(backURL);
-        } catch (err) {
-            next(err)
+        const currentFolder = req.body.currentFolder;
+        const files = req.files;
+
+        // forEach does not wait for asynchronous operations, so for...of must be used,
+        // to avoid page reload before all files are uploaded
+        for (const file of files) {
+            const filename = file.filename;
+            const filesize = file.size;
+            const originalname = file.originalname;
+            try {
+                await storagedb.addFile(filename, originalname, currentFolder, filesize)
+                await storagedb.increaseFolderSize(currentFolder, filesize)
+            } catch (err) {
+                next(err)
+            }
         }
+        const backURL = req.get('Referer') || '/';
+        res.redirect(backURL);
     }
 ]
 
@@ -107,7 +113,6 @@ async function postDeleteFile(req, res, next) {
     try {
         const deletedFile = await storagedb.deleteFile(fileId);
         await fs.unlink(filePath)
-        console.log(`User ${username} deleted file ${deletedFile.name}, id ${deletedFile.id}`)
     } catch (err) {
         next(err)
     }
@@ -157,7 +162,6 @@ async function postDeleteFolder(req, res, next) {
         deletedFiles.forEach(async file => {
             const filePath = path.join(__dirname, `../uploads/${username}`, `${file.id}`);
             await fs.unlink(filePath)
-            console.log(`User ${username} deleted file ${file.name}, id ${file.id}`)
         })
         const backURL = req.get('Referer') || '/';
         res.redirect(backURL);
