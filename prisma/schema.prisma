@@ -43,3 +43,19 @@ model File {
   previousFolderId String?
   size Int?
 }
+
+model scheduled_jobs {
+  id Int @id @default(autoincrement())
+  job_type String
+  item_id String @unique
+  item_type String
+  date DateTime
+}
+
+model job_logs {
+  id Int @id @default(autoincrement())
+  job_type String
+  item_id String @unique
+  item_type String
+  date DateTime
+}

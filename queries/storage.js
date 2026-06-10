@@ -272,6 +272,42 @@ async function renameFolder(id, name) {
     })
 }
 
+async function addJob(jobType, itemId, itemType, date) {
+    await prisma.scheduled_jobs.create({
+        data: {
+            job_type: jobType,
+            item_id: itemId,
+            item_type: itemType,
+            date: date
+        }
+    })
+}
+
+async function addJobLog(jobType, itemId, itemType, date) {
+    await prisma.job_logs.create({
+        data: {
+            job_type: jobType,
+            item_id: itemId,
+            item_type: itemType,
+            date: date
+        }
+    })
+}
+
+async function removeJob(itemId) {
+    const job = await prisma.scheduled_jobs.delete({
+        where: {
+            item_id: itemId,
+        }
+    })
+    return job
+}
+
+async function getJobs() {
+    const jobs = await prisma.scheduled_jobs.findMany();
+    return jobs
+}
+
 module.exports = {
     addFolder,
     getChildrenFolders,
@@ -291,5 +327,9 @@ module.exports = {
     increaseFolderSize,
     decreaseFolderSize,
     renameFile,
-    renameFolder
+    renameFolder,
+    addJob,
+    addJobLog,
+    removeJob,
+    getJobs
 }

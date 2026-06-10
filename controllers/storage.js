@@ -1,4 +1,5 @@
 const fs = require('node:fs/promises');
+require('dotenv').config();
 const storagedb = require('../queries/storage');
 const path = require('path');
 const { randomUUID } = require('crypto');
@@ -47,8 +48,7 @@ async function getFolder(req, res, next) {
             folders: childrenFolders,
             files: files,
             currentFolder: folder,
-            isRoot: isRoot,
-            isTrash: isTrash,
+            daysDelete: process.env.DAYS_TO_DELETE,
             path: await storagedb.getPath(folder.id),
             filesize: filesize,
             editItem: editItem,
@@ -129,6 +129,9 @@ async function postTrashFile(req, res, next) {
         const updateSize = await storagedb.decreaseFolderSize(file.folderId, file.size)
         const trashFolder = await storagedb.getTrashFolder(username.id)
         const trashFile = await storagedb.moveFile(fileId, trashFolder.id);
+        const deleteDate = new Date()
+        deleteDate.setDate(deleteDate.getDate() + process.env.DAYS_TO_DELETE || 7)
+        await storagedb.addJob("delete", fileId, "file", deleteDate)
     } catch (err) {
         next(err)
     }
@@ -145,11 +148,14 @@ async function postTrashFolder(req, res, next) {
         const folder = await storagedb.getFolder(folderId)
         await storagedb.moveFolder(folder.id, trashFolder.id)
         const updateSize = await storagedb.decreaseFolderSize(currentFolder, folder.size)
-        const backURL = req.get('Referer') || '/';
-        res.redirect(backURL);
+        const deleteDate = new Date()
+        deleteDate.setDate(deleteDate.getDate() + process.env.DAYS_TO_DELETE || 7)
+        await storagedb.addJob("delete", folderId, "folder", deleteDate)
     } catch (err) {
         next(err)
     }
+    const backURL = req.get('Referer') || '/';
+    res.redirect(backURL);
 
 }
 
@@ -176,11 +182,12 @@ async function postRestoreFile(req, res, next) {
         const file = await storagedb.getFile(fileId);
         await storagedb.restoreFile(file.id);
         await storagedb.increaseFolderSize(file.previousFolderId, file.size)
-        const backURL = req.get('Referer') || '/';
-        res.redirect(backURL);
+        await storagedb.removeJob(fileId);
     } catch (err) {
         next(err)
     }
+    const backURL = req.get('Referer') || '/';
+    res.redirect(backURL);
 }
 
 async function postRestoreFolder(req, res, next) {
@@ -191,11 +198,12 @@ async function postRestoreFolder(req, res, next) {
         const folder = await storagedb.getFolder(folderId)
         await storagedb.increaseFolderSize(folder.previousParentId, folder.size)
         await storagedb.restoreFolder(folderId)
-        const backURL = req.get('Referer') || '/';
-        res.redirect(backURL);
+        await storagedb.removeJob(folderId);
     } catch (err) {
         next(err)
     }
+    const backURL = req.get('Referer') || '/';
+    res.redirect(backURL);
 
 }
 
@@ -205,10 +213,11 @@ async function postRenameFile(req, res, next) {
     const currentFolderId = req.body.currentFolder;
     try {
         await storagedb.renameFile(fileId, name)
-        res.redirect(`/folder/${currentFolderId}`)
     } catch (err) {
         next(err)
     }
+    const backURL = req.get('Referer') || '/';
+    res.redirect(backURL);
 }
 
 async function postRenameFolder(req, res, next) {

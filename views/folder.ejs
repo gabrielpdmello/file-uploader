@@ -36,6 +36,11 @@
                     <a href="/folder/<%= folder.id %><%= editType=="move" ? `?editType=${editType}&editItemId=${editItem?.id}&editItemType=folder` : '' %>"><%= folder.name %></a>
                 <% }) %>
             </div>
+            <% if (path[0].name=="trash") { %>
+            <div>
+                <p>Files and folders will be deleted in <%= daysDelete %> days after being moved to trash.</p>
+            </div>
+            <% } %>
             <div>
             <% if (editType == "move") { %>
                 <form class="moving-item" action="/move-<%= editItemType %>/<%= editItem.id %>" method="post">
