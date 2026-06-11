@@ -205,14 +205,23 @@ async function postRestoreFile(req, res, next) {
 }
 
 async function postRestoreFolder(req, res, next) {
-    const username = req.user.username;
     const folderId = req.params.folderId;
     
     try {
         const folder = await storagedb.getFolder(folderId)
-        await storagedb.increaseFolderSize(folder.previousParentId, folder.size)
-        await storagedb.restoreFolder(folderId)
-        await storagedb.removeJob(folderId);
+
+        // check if parent folder is in trash
+        const path = await storagedb.getPath(folderId);
+        if (path[0].name = "trash") {
+            const root = await storagedb.getRootFolder(folder.ownerId)
+            await storagedb.moveFolder(folder.id, root.id)
+            await storagedb.removeJob(folder.id);
+        } else {
+            await storagedb.increaseFolderSize(folder.previousParentId, folder.size)
+            await storagedb.restoreFolder(folderId)
+            await storagedb.removeJob(folder.id);
+        }
+        
     } catch (err) {
         next(err)
     }
