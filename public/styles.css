@@ -326,3 +326,19 @@ thead {
     display: inline-block;
     margin-bottom: 0.6rem;
 }
+
+.share-container {
+    display: block;
+    width: fit-content;
+    margin: auto;
+    position: relative;
+    z-index: 2;
+}
+
+.share-container label {
+    display: block;
+}
+
+.share-input {
+    display: block;
+}

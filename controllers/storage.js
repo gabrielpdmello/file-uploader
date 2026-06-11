@@ -23,32 +23,43 @@ async function getFolder(req, res, next) {
     const folderId = req.params.folderId;
     const editItemId = req.query.editItemId;
     const editItemType = req.query.editItemType;
+    let shareFolderId = req.query.shareFolderId;
     let editType = req.query.editType;
     const originalUrl = req.originalUrl;
     try {
         let folder;
+        let rootFolder;
+        let childrenFolders;
+
         if (originalUrl == '/folder/root') {
             folder = await storagedb.getRootFolder(req.user?.id);
+            childrenFolders = await storagedb.getChildrenFolders(folder.id)
         } else if (originalUrl == '/trash/root') {
             folder = await storagedb.getTrashFolder(req.user?.id);
+            childrenFolders = await storagedb.getChildrenFolders(folder.id)
+        } else if (originalUrl == '/share/root') {
+            folder = await storagedb.getShareFolder(req.user?.id);
+            childrenFolders = await storagedb.getSharedFolders(folder.id)
         } else {
             folder = await storagedb.getFolder(folderId);
+            childrenFolders = await storagedb.getChildrenFolders(folder.id)
         }
 
-        if (req.user?.id != folder.ownerId) {
+        if (originalUrl.includes('folder')) {
+            rootFolder = 'folder';
+        } else if (originalUrl.includes('trash')) {
+            rootFolder = 'trash';
+        } else if (originalUrl.includes('share')) {
+            rootFolder = 'share';
+        }
+
+        if (req.user == null && folder?.share != true) {
             res.redirect("/login");
-
+        } else if (req.user == null && rootFolder != 'share') {
+            res.redirect("/login");
         } else {
-            const childrenFolders = await storagedb.getChildrenFolders(folder.id)
             const files = await storagedb.getFiles(folder.id);
-            let rootFolder;
             let editItem;
-
-            if (originalUrl.includes('folder')) {
-                rootFolder = 'folder';
-            } else if (originalUrl.includes('trash')) {
-                rootFolder = 'trash';
-            }
 
             if (editItemType == "folder") {
                 editItem = await storagedb.getFolder(editItemId);
@@ -66,8 +77,8 @@ async function getFolder(req, res, next) {
                 editItem: editItem,
                 editItemType: editItemType,
                 editType: editType,
-                rootFolder: rootFolder
-                
+                rootFolder: rootFolder,
+                shareFolderId: shareFolderId
             })
         }
     } catch (err) {
@@ -78,9 +89,17 @@ async function getFolder(req, res, next) {
 
 async function postAddFolder(req, res, next) {
     const name = req.body.name;
-    const currentFolder = req.body.currentFolder;
-    const owner = Number(req.body.owner);
-    const folder = await storagedb.addFolder(name, currentFolder, owner);
+    const currentFolderId = req.body.currentFolder;
+    try {
+        const currentFolder = await storagedb.getFolder(currentFolderId)
+        const parentId = currentFolder.id;
+        const ownerId = currentFolder.ownerId;
+        const isShared = currentFolder.shared;
+        const folder = await storagedb.addFolder(name, parentId, ownerId, isShared);
+
+    } catch (err) {
+        next(err)
+    }
     const backURL = req.get('Referer') || '/';
     res.redirect(backURL);
 
@@ -277,6 +296,36 @@ async function postMoveFolder(req, res, next) {
     }
 }
 
+async function shareFolder(req, res, next) {
+    const days = req.body.days;
+    const folderId = req.params.folderId;
+    let currentFolder;
+    try {
+        const shareDate = new Date();
+        shareDate.setDate(shareDate.getDate() + days)
+        const folder = await storagedb.getFolder(folderId);
+        currentFolder = folder.parentId;
+        await storagedb.shareFolder(folderId)
+        await storagedb.addJob("unshare", folderId, "folder", shareDate)
+    } catch (err) {
+        next(err)
+    }
+    res.redirect(`/folder/${currentFolder}`);
+}
+
+async function unshareFolder(req, res, next) {
+    const folderId = req.params.folderId;
+
+    try {
+        
+        // change flag recursively
+        // set null to share_folder_id
+        // remove from scheduled
+    } catch(err) {
+        next(err)
+    }
+}
+
 module.exports = {
     getFolder,
     postAddFolder,
@@ -291,5 +340,7 @@ module.exports = {
     postRenameFile,
     postRenameFolder,
     postMoveFolder,
-    postMoveFile
+    postMoveFile,
+    shareFolder,
+    unshareFolder
 }

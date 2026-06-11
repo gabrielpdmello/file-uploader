@@ -21,6 +21,10 @@ async function getTrash(req, res) {
     res.redirect("/trash/root");
 }
 
+async function getShare(req, res) {
+    res.redirect("/share/root");
+}
+
 function getSignup(req, res) {
     res.render("signup");
 }
@@ -65,6 +69,7 @@ module.exports = {
     index,
     getRoot,
     getTrash,
+    getShare,
     getSignup,
     postSignup,
     getLogin,

@@ -1,11 +1,12 @@
 const { prisma } = require("../lib/prisma.js");
 
-async function addFolder(name, parent, ownerId) {
+async function addFolder(name, parent, ownerId, isShare) {
     const folder = await prisma.folder.create({
         data: {
             name: name,
             parentId: parent,
-            ownerId: ownerId
+            ownerId: ownerId,
+            shared: isShare
         }
     })
     return folder
@@ -14,6 +15,13 @@ async function addFolder(name, parent, ownerId) {
 async function getChildrenFolders(id) {
     const folders = await prisma.folder.findMany({
         where: { parentId: id }
+    })
+    return folders
+};
+
+async function getSharedFolders(shareFolderId) {
+    const folders = await prisma.folder.findMany({
+        where: { share_folder_id: shareFolderId }
     })
     return folders
 };
@@ -34,6 +42,18 @@ async function getTrashFolder(ownerId) {
     const trash = await prisma.folder.findFirst({
         where: {
             name: "trash",
+            parentId: null,
+            ownerId: ownerId
+        }
+    })
+
+    return trash
+}
+
+async function getShareFolder(ownerId) {
+    const trash = await prisma.folder.findFirst({
+        where: {
+            name: "share",
             parentId: null,
             ownerId: ownerId
         }
@@ -308,10 +328,67 @@ async function getJobs() {
     return jobs
 }
 
+async function shareFolder(folderId) {
+    const folder = await getFolder(folderId)
+    const share = await getShareFolder(folder.ownerId)
+    
+    await prisma.$queryRaw`
+    WITH RECURSIVE folderTree AS (
+        SELECT * FROM "Folder" WHERE id = ${folder.id}
+        UNION ALL
+        SELECT f.* FROM "Folder" f
+        INNER JOIN folderTree ft ON f."parentId" = ft.id
+    )
+    update "Folder" f
+    set shared = true
+    from folderTree ft 
+    where ft.id = f.id;
+    `
+
+    await prisma.folder.update({
+        where: {
+            id: folder.id
+        },
+        data: {
+            share_folder_id: share.id
+        }
+    })
+}
+
+async function unshareFolder(folderId) {
+    const folder = await getFolder(folderId)
+    const share = await getShareFolder(folder.ownerId)
+    
+    await prisma.$queryRaw`
+    WITH RECURSIVE folderTree AS (
+        SELECT * FROM "Folder" WHERE id = ${folder.id}
+        UNION ALL
+        SELECT f.* FROM "Folder" f
+        INNER JOIN folderTree ft ON f."parentId" = ft.id
+    )
+    update "Folder" f
+    set shared = true
+    from folderTree ft 
+    where ft.id = f.id;
+    `
+
+    await prisma.folder.update({
+        where: {
+            id: folder.id
+        },
+        data: {
+            share_folder_id: share.id
+        }
+    })
+}
+
+
 module.exports = {
     addFolder,
     getChildrenFolders,
+    getSharedFolders,
     getRootFolder,
+    getShareFolder,
     getFolder,
     getFiles,
     getFile,
@@ -331,5 +408,6 @@ module.exports = {
     addJob,
     addJobLog,
     removeJob,
-    getJobs
+    getJobs,
+    shareFolder
 }

@@ -24,6 +24,14 @@ async function createUser(name, username, password) {
             }
         }
     })
+    const shareFolder = await prisma.folder.create({
+        data: {
+            name: "share",
+            user: {
+                connect: {id: user.id}
+            }
+        }
+    })
 }
 
 async function findByUsername(username) {

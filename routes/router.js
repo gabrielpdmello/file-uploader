@@ -12,7 +12,7 @@ router.get('/', controller.index);
 
 router.get('/folder', controller.getRoot);
 router.get('/trash', controller.getTrash);
-
+router.get('/share', controller.getShare);
 
 router.get('/signup', controller.getSignup);
 router.post('/signup', controller.postSignup);
@@ -32,7 +32,7 @@ router.post('/upload', storage.postUpload);
 
 router.get('/folder/:folderId', storage.getFolder);
 router.get('/trash/:folderId', storage.getFolder);
-
+router.get('/share/:folderId', storage.getFolder);
 
 router.post('/delete-folder/:folderId', storage.postDeleteFolder);
 router.post('/trash-folder/:folderId', storage.postTrashFolder);
@@ -53,7 +53,9 @@ router.post('/rename-folder/:folderId', storage.postRenameFolder);
 
 router.post('/move-folder/:folderId', storage.postMoveFolder);
 router.post('/move-file/:fileId', storage.postMoveFile);
+router.post('/share-folder/:folderId', storage.shareFolder);
 
+router.post('/unshare-folder/:folderId', storage.postUnshareFolder);
 
 // router.use(controller.errorHandler);
 

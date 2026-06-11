@@ -33,6 +33,8 @@ model Folder {
   ownerId Int
   files File[]
   size Int @default(0)
+  shared Boolean @default(false)
+  share_folder_id String?
 }
 
 model File {
