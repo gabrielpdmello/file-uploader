@@ -17,6 +17,10 @@ async function getRoot(req, res) {
     res.redirect("/folder/root");
 }
 
+async function getTrash(req, res) {
+    res.redirect("/trash/root");
+}
+
 function getSignup(req, res) {
     res.render("signup");
 }
@@ -60,6 +64,7 @@ module.exports = {
     locals,
     index,
     getRoot,
+    getTrash,
     getSignup,
     postSignup,
     getLogin,

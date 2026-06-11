@@ -11,6 +11,8 @@ router.use(controller.locals);
 router.get('/', controller.index);
 
 router.get('/folder', controller.getRoot);
+router.get('/trash', controller.getTrash);
+
 
 router.get('/signup', controller.getSignup);
 router.post('/signup', controller.postSignup);
@@ -29,6 +31,8 @@ router.get('/upload', controller.getUpload);
 router.post('/upload', storage.postUpload);
 
 router.get('/folder/:folderId', storage.getFolder);
+router.get('/trash/:folderId', storage.getFolder);
+
 
 router.post('/delete-folder/:folderId', storage.postDeleteFolder);
 router.post('/trash-folder/:folderId', storage.postTrashFolder);

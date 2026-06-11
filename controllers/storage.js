@@ -24,38 +24,52 @@ async function getFolder(req, res, next) {
     const editItemId = req.query.editItemId;
     const editItemType = req.query.editItemType;
     let editType = req.query.editType;
+    const originalUrl = req.originalUrl;
     try {
         let folder;
-        if (folderId == "root") {
-            folder = await storagedb.getRootFolder(req.user.id);
-        } else if (folderId == "trash") {
-            folder = await storagedb.getTrashFolder(req.user.id);
+        if (originalUrl == '/folder/root') {
+            folder = await storagedb.getRootFolder(req.user?.id);
+        } else if (originalUrl == '/trash/root') {
+            folder = await storagedb.getTrashFolder(req.user?.id);
         } else {
             folder = await storagedb.getFolder(folderId);
         }
-        let editItem;
-        if (editItemType == "folder") {
-            editItem = await storagedb.getFolder(editItemId);
-        } else if (editItemType == "file") {
-            editItem = await storagedb.getFile(editItemId);
-        }
-        const childrenFolders = await storagedb.getChildrenFolders(folder.id)
-        const files = await storagedb.getFiles(folder.id);
-        const isRoot = folder.name === "root";
-        const isTrash = folder.name === "trash";
 
-        res.render('folder', {
-            folders: childrenFolders,
-            files: files,
-            currentFolder: folder,
-            daysDelete: process.env.DAYS_TO_DELETE,
-            path: await storagedb.getPath(folder.id),
-            filesize: filesize,
-            editItem: editItem,
-            editItemType: editItemType,
-            editType: editType,
-            
-        })
+        if (req.user?.id != folder.ownerId) {
+            res.redirect("/login");
+
+        } else {
+            const childrenFolders = await storagedb.getChildrenFolders(folder.id)
+            const files = await storagedb.getFiles(folder.id);
+            let rootFolder;
+            let editItem;
+
+            if (originalUrl.includes('folder')) {
+                rootFolder = 'folder';
+            } else if (originalUrl.includes('trash')) {
+                rootFolder = 'trash';
+            }
+
+            if (editItemType == "folder") {
+                editItem = await storagedb.getFolder(editItemId);
+            } else if (editItemType == "file") {
+                editItem = await storagedb.getFile(editItemId);
+            }
+
+            res.render('folder', {
+                folders: childrenFolders,
+                files: files,
+                currentFolder: folder,
+                daysDelete: process.env.DAYS_TO_DELETE,
+                path: await storagedb.getPath(folder.id),
+                filesize: filesize,
+                editItem: editItem,
+                editItemType: editItemType,
+                editType: editType,
+                rootFolder: rootFolder
+                
+            })
+        }
     } catch (err) {
         next(err)
     }
