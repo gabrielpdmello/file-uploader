@@ -356,28 +356,25 @@ async function shareFolder(folderId) {
 }
 
 async function unshareFolder(folderId) {
-    const folder = await getFolder(folderId)
-    const share = await getShareFolder(folder.ownerId)
-    
     await prisma.$queryRaw`
     WITH RECURSIVE folderTree AS (
-        SELECT * FROM "Folder" WHERE id = ${folder.id}
+        SELECT * FROM "Folder" WHERE id = ${folderId}
         UNION ALL
         SELECT f.* FROM "Folder" f
         INNER JOIN folderTree ft ON f."parentId" = ft.id
     )
     update "Folder" f
-    set shared = true
+    set shared = false
     from folderTree ft 
     where ft.id = f.id;
     `
 
     await prisma.folder.update({
         where: {
-            id: folder.id
+            id: folderId
         },
         data: {
-            share_folder_id: share.id
+            share_folder_id: null
         }
     })
 }
@@ -409,5 +406,6 @@ module.exports = {
     addJobLog,
     removeJob,
     getJobs,
-    shareFolder
+    shareFolder,
+    unshareFolder
 }

@@ -52,7 +52,7 @@ app.listen(PORT, (error) => {
 // execute job each 10 minutes
 // jobs can be delete folder / file from trash, or
 // unshare folder / file
-cron.schedule('*/10 * * * *', async () => {
+cron.schedule('*/1 * * * *', async () => {
   try {
     const jobs = await storagedb.getJobs();
     const date = new Date();
@@ -68,16 +68,11 @@ cron.schedule('*/10 * * * *', async () => {
           await storagedb.removeJob(job.item_id);
           await storagedb.addJobLog(job.job_type, job.item_id, job.item_type, job.date)
         }
-        // if (job.job_type == "unshare" && job.item_type == "folder") {
-        
-        //   await storagedb.removeJob(job.item_id);
-        //   await storagedb.addjobLog(job.job_type, job.item_id, job.item_type, job.date)
-        // }
-        // if (job.job_type == "unshare" && job.item_type == "file") {
-        
-        //   await storagedb.removeJob(job.item_id);
-        //   await storagedb.addjobLog(job.job_type, job.item_id, job.item_type, job.date)
-        // }
+        if (job.job_type == "unshare" && job.item_type == "folder") {
+          await storagedb.unshareFolder(job.item_id)
+          await storagedb.removeJob(job.item_id);
+          await storagedb.addJobLog(job.job_type, job.item_id, job.item_type, job.date)
+        }
       }
     }
   } catch (err) {

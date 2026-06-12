@@ -53,7 +53,7 @@ async function getFolder(req, res, next) {
             rootFolder = 'share';
         }
 
-        if (req.user == null && folder?.share != true) {
+        if (req.user == null && folder?.shared != true) {
             res.redirect("/login");
         } else if (req.user == null && rootFolder != 'share') {
             res.redirect("/login");
@@ -313,17 +313,16 @@ async function shareFolder(req, res, next) {
     res.redirect(`/folder/${currentFolder}`);
 }
 
-async function unshareFolder(req, res, next) {
+async function postUnshareFolder(req, res, next) {
     const folderId = req.params.folderId;
-
     try {
-        
-        // change flag recursively
-        // set null to share_folder_id
-        // remove from scheduled
+        await storagedb.unshareFolder(folderId);
+        await storagedb.removeJob(folderId);
     } catch(err) {
         next(err)
     }
+    const backURL = req.get('Referer') || '/';
+    res.redirect(backURL);
 }
 
 module.exports = {
@@ -342,5 +341,5 @@ module.exports = {
     postMoveFolder,
     postMoveFile,
     shareFolder,
-    unshareFolder
+    postUnshareFolder
 }
