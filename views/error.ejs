@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <%- include("partials/head.ejs") %>
     <title>Error</title>
 </head>
 <body>
-    <h1>Oh no, not again!</h1>
-    <p><%= error %></p>
+    <%- include("partials/header.ejs") %>
+    <div class="landing-main">
+        <h1>Error!</h1>
+        <p>Internal server error</p>
+        <a class="btn" href="/">Return to home</a>
+    </div>
 </body>
 </html>

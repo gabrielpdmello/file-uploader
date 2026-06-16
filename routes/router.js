@@ -57,6 +57,6 @@ router.post('/share-folder/:folderId', storage.shareFolder);
 
 router.post('/unshare-folder/:folderId', storage.postUnshareFolder);
 
-// router.use(controller.errorHandler);
+router.use(controller.errorHandler);
 
 module.exports = router;
