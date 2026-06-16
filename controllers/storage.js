@@ -163,7 +163,7 @@ async function postTrashFile(req, res, next) {
         const trashFolder = await storagedb.getTrashFolder(username.id)
         const trashFile = await storagedb.moveFile(fileId, trashFolder.id);
         const deleteDate = new Date()
-        deleteDate.setDate(deleteDate.getDate() + process.env.DAYS_TO_DELETE || 7)
+        deleteDate.setDate(deleteDate.getDate() + Number(process.env.DAYS_TO_DELETE) || 7)
         await storagedb.addJob("delete", fileId, "file", deleteDate)
     } catch (err) {
         next(err)
@@ -181,8 +181,8 @@ async function postTrashFolder(req, res, next) {
         const folder = await storagedb.getFolder(folderId)
         await storagedb.moveFolder(folder.id, trashFolder.id)
         const updateSize = await storagedb.decreaseFolderSize(currentFolder, folder.size)
-        const deleteDate = new Date()
-        deleteDate.setDate(deleteDate.getDate() + process.env.DAYS_TO_DELETE || 7)
+        const deleteDate = new Date();
+        deleteDate.setDate(deleteDate.getDate() + Number(process.env.DAYS_TO_DELETE))    
         await storagedb.addJob("delete", folderId, "folder", deleteDate)
     } catch (err) {
         next(err)
@@ -305,7 +305,7 @@ async function shareFolder(req, res, next) {
         shareDate.setDate(shareDate.getDate() + days)
         const folder = await storagedb.getFolder(folderId);
         currentFolder = folder.parentId;
-        await storagedb.shareFolder(folderId)
+        await storagedb.shareFolder(folderId, shareDate)
         await storagedb.addJob("unshare", folderId, "folder", shareDate)
     } catch (err) {
         next(err)

@@ -328,7 +328,7 @@ async function getJobs() {
     return jobs
 }
 
-async function shareFolder(folderId) {
+async function shareFolder(folderId, shareDate) {
     const folder = await getFolder(folderId)
     const share = await getShareFolder(folder.ownerId)
     
@@ -350,7 +350,8 @@ async function shareFolder(folderId) {
             id: folder.id
         },
         data: {
-            share_folder_id: share.id
+            share_folder_id: share.id,
+            share_date: shareDate
         }
     })
 }
@@ -374,7 +375,8 @@ async function unshareFolder(folderId) {
             id: folderId
         },
         data: {
-            share_folder_id: null
+            share_folder_id: null,
+            share_date: null
         }
     })
 }

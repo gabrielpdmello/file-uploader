@@ -52,7 +52,7 @@ app.listen(PORT, (error) => {
 // execute job each 10 minutes
 // jobs can be delete folder / file from trash, or
 // unshare folder / file
-cron.schedule('*/1 * * * *', async () => {
+cron.schedule('*/10 * * * *', async () => {
   try {
     const jobs = await storagedb.getJobs();
     const date = new Date();

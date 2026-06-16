@@ -246,7 +246,9 @@ thead {
 .icon--folder,
 .icon--file,
 .icon--restore,
-.icon--move {
+.icon--move,
+.icon--share,
+.icon--unshare {
     display: inline-block;
     width: 1.5rem;
     height: 1.5rem;
@@ -288,6 +290,14 @@ thead {
     background-image: url(folder-arrow-right-svgrepo-com.svg);
     width: 1.8rem;
     height: 1.8rem;
+}
+
+.icon--share {
+    background-image: url(share-nodes-svgrepo-com.svg);
+}
+
+.icon--unshare {
+    background-image: url(stop-svgrepo-com.svg);
 }
 
 .btn-icon {

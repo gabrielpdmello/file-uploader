@@ -66,6 +66,9 @@
                         <tr>
                             <td class="column-name">Name</td>
                             <td class="column-updated">Last updated</td>
+                            <% if (currentFolder.name == "share") { %>
+                            <td class="column-share">Share until</td>
+                            <% } %>
                             <td class="column-size">Size</td>
                         </tr>
                     </thead>
@@ -89,6 +92,9 @@
                                    </div>
                                 </td>
                                 <td>01/01/2026</td>
+                                <% if (currentFolder.name == "share" && currentFolder.parentId == null) { %>
+                                <td><%= folder.share_date.toLocaleDateString() %></td>
+                                <% } %>
                                 <td><%= filesize(folder.size) %></td>
                                 <td>
                                     <div class="btn-container">
@@ -114,11 +120,11 @@
                                         <% } %>              
                                         <% if (rootFolder == "share") { %>
                                         <form action="/unshare-folder/<%= folder.id %>" method="post">
-                                            <button class="btn-icon" type="submit">unshare</button>
+                                            <button class="btn-icon icon--unshare" type="submit" title="Stop sharing folder"></button>
                                         </form>
                                         <% } else { %>
                                         <a href="/<%= rootFolder %>/<%= currentFolder.id %>?shareFolderId=<%= folder.id %>">
-                                            <span class="btn-icon icon--move" title="Share Folder"></span>
+                                            <span class="btn-icon icon--share" title="Share Folder"></span>
                                         </a>
                                         <% } %>
                                         <% } %>

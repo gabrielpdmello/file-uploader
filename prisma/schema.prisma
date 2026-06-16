@@ -35,6 +35,7 @@ model Folder {
   size Int @default(0)
   shared Boolean @default(false)
   share_folder_id String?
+  share_date DateTime?
 }
 
 model File {
