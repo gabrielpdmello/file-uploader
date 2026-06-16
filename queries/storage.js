@@ -1,12 +1,13 @@
 const { prisma } = require("../lib/prisma.js");
 
-async function addFolder(name, parent, ownerId, isShare) {
+async function addFolder(name, parent, ownerId, isShare, lastUpdated) {
     const folder = await prisma.folder.create({
         data: {
             name: name,
             parentId: parent,
             ownerId: ownerId,
-            shared: isShare
+            shared: isShare,
+            lastUpdated
         }
     })
     return folder
@@ -276,7 +277,8 @@ async function renameFile(id, name) {
             id: id,
         },
         data: {
-            name: name
+            name: name,
+            last_updated: new Date().toISOString()
         }
     })
 }
@@ -287,7 +289,8 @@ async function renameFolder(id, name) {
             id: id,
         },
         data: {
-            name: name
+            name: name,
+            last_updated: new Date().toISOString()
         }
     })
 }

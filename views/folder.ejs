@@ -91,7 +91,7 @@
                                         <% } %>
                                    </div>
                                 </td>
-                                <td>01/01/2026</td>
+                                <td><%= folder.last_update.toLocaleDateString() %></td>
                                 <% if (currentFolder.name == "share" && currentFolder.parentId == null) { %>
                                 <td><%= folder.share_date.toLocaleDateString() %></td>
                                 <% } %>
@@ -158,13 +158,10 @@
                                     <span class="item-name"><%= file.name %></span>
                                     <% } %>
                                 </td>
-                                <td>01/01/2026</td>
+                                <td><%= file.last_update.toLocaleDateString() %></td>
                                 <td><%= filesize(file.size) %></td>
                                 <td>
                                     <div class="btn-container">
-                                        <form action="/download/<%= file.id %>" method="post">
-                                            <button class="btn-icon icon--download" type="submit" title="Download File"></button>
-                                        </form>
                                         <% if (currentUser) { %>
                                             <% if (rootFolder == "trash") { %>
                                             <form action="/delete-file/<%= file.id %>" method="post">
@@ -174,7 +171,8 @@
                                                 <button class="btn-icon icon--restore" type="submit" title="Restore File"></button>
                                             </form>
                                             <% } else { %>
-                                            <a href="/<%= rootFolder %>/<%= currentFolder.id %>?editType=rename&itemId=<%= file.id %>">
+                                            <a href="/<%= rootFolder %>/<%= currentFolder.id %>?editType=rename&editItemId=<%= file.id %>&editItemType=file">
+
                                                 <span class="btn-icon icon--rename" title="Rename File"></span>
                                             </a>
                                             <a href="/<%= rootFolder %>/<%= currentFolder.id %>?editType=move&editItemId=<%= file.id %>&editItemType=file">
@@ -186,6 +184,9 @@
                                             </form>
                                         <% } %>
                                         <% } %>
+                                        <form action="/download/<%= file.id %>" method="post">
+                                            <button class="btn-icon icon--download" type="submit" title="Download File"></button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>

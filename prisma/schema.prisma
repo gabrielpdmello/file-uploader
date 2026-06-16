@@ -36,6 +36,7 @@ model Folder {
   shared Boolean @default(false)
   share_folder_id String?
   share_date DateTime?
+  last_update DateTime @default(now())
 }
 
 model File {
@@ -45,6 +46,7 @@ model File {
   folderId String
   previousFolderId String?
   size Int?
+  last_update DateTime @default(now())
 }
 
 model scheduled_jobs {
