@@ -19,74 +19,6 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage })
 
-async function getFolder(req, res, next) {
-    const folderId = req.params.folderId;
-    const editItemId = req.query.editItemId;
-    const editItemType = req.query.editItemType;
-    let shareFolderId = req.query.shareFolderId;
-    let editType = req.query.editType;
-    const originalUrl = req.originalUrl;
-    try {
-        let folder;
-        let rootFolder;
-        let childrenFolders;
-
-        if (originalUrl == '/folder/root') {
-            folder = await storagedb.getRootFolder(req.user?.id);
-            childrenFolders = await storagedb.getChildrenFolders(folder.id)
-        } else if (originalUrl == '/trash/root') {
-            folder = await storagedb.getTrashFolder(req.user?.id);
-            childrenFolders = await storagedb.getChildrenFolders(folder.id)
-        } else if (originalUrl == '/share/root') {
-            folder = await storagedb.getShareFolder(req.user?.id);
-            childrenFolders = await storagedb.getSharedFolders(folder.id)
-        } else {
-            folder = await storagedb.getFolder(folderId);
-            childrenFolders = await storagedb.getChildrenFolders(folder.id)
-        }
-
-        if (originalUrl.includes('folder')) {
-            rootFolder = 'folder';
-        } else if (originalUrl.includes('trash')) {
-            rootFolder = 'trash';
-        } else if (originalUrl.includes('share')) {
-            rootFolder = 'share';
-        }
-
-        if (req.user == null && folder?.shared != true) {
-            res.redirect("/login");
-        } else if (req.user == null && rootFolder != 'share') {
-            res.redirect("/login");
-        } else {
-            const files = await storagedb.getFiles(folder.id);
-            let editItem;
-
-            if (editItemType == "folder") {
-                editItem = await storagedb.getFolder(editItemId);
-            } else if (editItemType == "file") {
-                editItem = await storagedb.getFile(editItemId);
-            }
-
-            res.render('folder', {
-                folders: childrenFolders,
-                files: files,
-                currentFolder: folder,
-                daysDelete: process.env.DAYS_TO_DELETE,
-                path: await storagedb.getPath(folder.id),
-                filesize: filesize,
-                editItem: editItem,
-                editItemType: editItemType,
-                editType: editType,
-                rootFolder: rootFolder,
-                shareFolderId: shareFolderId
-            })
-        }
-    } catch (err) {
-        next(err)
-    }
-}
-
-
 async function postAddFolder(req, res, next) {
     const name = req.body.name;
     const currentFolderId = req.body.currentFolder;
@@ -296,7 +228,7 @@ async function postMoveFolder(req, res, next) {
     }
 }
 
-async function shareFolder(req, res, next) {
+async function postShareFolder(req, res, next) {
     const days = req.body.days;
     const folderId = req.params.folderId;
     let currentFolder;
@@ -326,7 +258,6 @@ async function postUnshareFolder(req, res, next) {
 }
 
 module.exports = {
-    getFolder,
     postAddFolder,
     postUpload,
     postDownloadFile,
@@ -340,6 +271,6 @@ module.exports = {
     postRenameFolder,
     postMoveFolder,
     postMoveFile,
-    shareFolder,
+    postShareFolder,
     postUnshareFolder
 }

@@ -384,6 +384,16 @@ async function unshareFolder(folderId) {
     })
 }
 
+async function getUser(username) {
+    const user = await prisma.user.findFirst({
+        where: {
+            username: username
+        }
+    })
+
+    return user
+}
+
 
 module.exports = {
     addFolder,
@@ -412,5 +422,6 @@ module.exports = {
     removeJob,
     getJobs,
     shareFolder,
-    unshareFolder
+    unshareFolder,
+    getUser
 }
