@@ -61,13 +61,13 @@ async function getFolder(req, res, next) {
         let rootFolder;
         let childrenFolders;
 
-        if (originalUrl == '/folder/root') {
+        if (originalUrl.includes('/folder/root')) {
             folder = await storagedb.getRootFolder(req.user?.id);
             childrenFolders = await storagedb.getChildrenFolders(folder.id)
-        } else if (originalUrl == '/trash/root') {
+        } else if (originalUrl.includes('/trash/root')) {
             folder = await storagedb.getTrashFolder(req.user?.id);
             childrenFolders = await storagedb.getChildrenFolders(folder.id)
-        } else if (originalUrl == '/share/root') {
+        } else if (originalUrl.includes('/share/root')) {
             folder = await storagedb.getShareFolder(req.user?.id);
             childrenFolders = await storagedb.getSharedFolders(folder.id)
         } else {

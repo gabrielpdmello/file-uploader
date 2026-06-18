@@ -49,7 +49,7 @@ li {
     margin-bottom: 0.5rem;
 }
 
-.btn, .btn--outline, .btn--small {
+.btn, .btn--outline, .btn--small, .btn--small--white {
     display: inline-block;
     background-color: var(--primary);
     color: white;
@@ -68,8 +68,13 @@ li {
 
 }
 
-.btn--small {
+.btn--small, .btn--small--white {
     padding: 0.2rem 0.8rem;
+}
+
+.btn--small--white {
+    background-color: white;
+    color: black;
 }
 
 .btn-container {
@@ -350,4 +355,24 @@ thead {
 
 .share-input {
     display: block;
+}
+
+.modal {
+    position: absolute;
+    right: 1rem;
+    bottom: 1rem;
+    color: white;
+    background-color: rgb(48, 48, 48);
+    padding: 1rem;
+    border-radius: 3px;
+    width: 40rem;
+    transition: opacity 0.5s ease, display 0.5s allow-discrete;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal.hidden {
+  display: none;
+  opacity: 0;
 }
