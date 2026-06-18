@@ -4,7 +4,6 @@ const storagedb = require('../queries/storage');
 const path = require('path');
 const { randomUUID } = require('crypto');
 const multer = require('multer');
-const { filesize, partial } = require('filesize');
 const storage = multer.diskStorage({
     destination: async function destination(req, file, cb) {
         const path = `./uploads/${req.user.username}`;

@@ -3,9 +3,11 @@ const controller = require("../controllers/controller");
 const storage = require("../controllers/storage");
 const router = Router();
 const passport = require("../config/passport")
+const flash = require('connect-flash');
+
 
 router.use(passport.session());
-
+router.use(flash());
 router.use(controller.locals);
 
 router.get('/', controller.index);
@@ -26,6 +28,7 @@ router.post("/login",
     passport.authenticate("local", {
         successRedirect: "/folder/root",
         failureRedirect: "/login",
+        failureFlash: true
     })
 );
 

@@ -10,15 +10,15 @@
         <form action="/signup" method="post">
             <span class="form-row">
                 <label for="name">Name</label>
-                <input type="text" id="name" name="name" value="<%= userInput != undefined ? userInput.name : '' %>">
+                <input type="text" id="name" name="name" value="<%= locals.userInput != undefined ? userInput.name : '' %>">
             </span>
             <span class="form-row">
                 <label for="username">Username</label>
-                <input type="text" id="username" name="username"  value="<%= userInput != undefined ? userInput.username : '' %>">
+                <input type="text" id="username" name="username"  value="<%= locals.userInput != undefined ? userInput.username : '' %>">
             </span>
             <span class="form-row">
                 <label for="password">Password</label>
-                <input type="password" id="password" name="password"  value="<%= userInput != undefined ? userInput.password : '' %>">
+                <input type="password" id="password" name="password"  value="<%= locals.userInput != undefined ? userInput.password : '' %>">
             </span>
             <span class="form-row">
                 <label for="confirmPassword">Confirm password</label>

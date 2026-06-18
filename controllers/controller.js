@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const user = require('../queries/user');
 const passport = require("../config/passport")
 const storagedb = require('../queries/storage');
+const { filesize, partial } = require('filesize');
 const { body, validationResult } = require("express-validator");
 
 require('dotenv').config();
@@ -24,6 +25,7 @@ const validateSignup = [
 
 async function locals(req, res, next) {
     res.locals.currentUser = req.user;
+    res.locals.errorMessage = req.flash('error');
     next();
 }
 
