@@ -3,6 +3,7 @@ require('dotenv').config();
 const storagedb = require('../queries/storage');
 const path = require('path');
 const { randomUUID } = require('crypto');
+const { body, validationResult } = require("express-validator");
 const multer = require('multer');
 const storage = multer.diskStorage({
     destination: async function destination(req, file, cb) {
@@ -17,24 +18,57 @@ const storage = multer.diskStorage({
 })
 
 const upload = multer({ storage: storage })
+const validateFile = [
+    body('name').trim()
+        .isLength({min: 1, max: 100}).withMessage("File name must be between 1 and 100 characters.")
+]
 
-async function postAddFolder(req, res, next) {
-    const name = req.body.name;
-    const currentFolderId = req.body.currentFolder;
-    try {
-        const currentFolder = await storagedb.getFolder(currentFolderId)
-        const parentId = currentFolder.id;
-        const ownerId = currentFolder.ownerId;
-        const isShared = currentFolder.shared;
-        const folder = await storagedb.addFolder(name, parentId, ownerId, isShared);
+const validateFolder = [
+    body('name').trim()
+        .isLength({min: 1, max: 100}).withMessage("Folder name must be between 1 and 100 characters.")
+]
 
-    } catch (err) {
-        next(err)
+const postAddFolder = [
+    validateFolder,
+    async (req, res, next) => {
+        const name = req.body.name;
+        const currentFolderId = req.body.currentFolder;
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            const backURL = req.get('Referer') || '/';
+            req.session.msg = errors.array();
+            return res.status(400).redirect(backURL);
+        }
+
+        try {
+            if (!req.user) {
+                res.redirect('/login');
+            } else {
+                const currentFolder = await storagedb.getFolder(currentFolderId);
+                const trashFolder = await storagedb.getTrashFolder(req.user.id);
+
+                if (currentFolder.id == trashFolder.id) {
+                    req.session.msg = ["Cannot create folder inside trash bin."];
+                    const backURL = req.get('Referer') || '/';
+                    res.redirect(backURL);
+                } else {
+                    const parentId = currentFolder.id;
+                    const ownerId = currentFolder.ownerId;
+                    const isShared = currentFolder.shared;
+                    const folder = await storagedb.addFolder(name, parentId, ownerId, isShared);
+                }
+            }
+
+        } catch (err) {
+            next(err)
+        }
+        if (!res.headersSent) {
+            const backURL = req.get('Referer') || '/';
+            res.redirect(backURL);
+        }
+
     }
-    const backURL = req.get('Referer') || '/';
-    res.redirect(backURL);
-
-}
+]
 
 const postUpload = [
     upload.array('files'),
@@ -48,6 +82,7 @@ const postUpload = [
             const filename = file.filename;
             const filesize = file.size;
             const originalname = file.originalname;
+
             try {
                 await storagedb.addFile(filename, originalname, currentFolder, filesize)
                 await storagedb.increaseFolderSize(currentFolder, filesize)

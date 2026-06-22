@@ -376,3 +376,12 @@ thead {
   display: none;
   opacity: 0;
 }
+
+.modal ul, .modal li {
+    margin: 0;
+}
+
+.modal ul {
+    list-style-type: none;
+    padding: 0;
+}

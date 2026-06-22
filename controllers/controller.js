@@ -8,6 +8,8 @@ const { body, validationResult } = require("express-validator");
 require('dotenv').config();
 
 const validateSignup = [
+    body('name').trim()
+        .isLength({ min: 5, max: 100 }).withMessage('Name must be between 5 and 100 characters.'),
     body('username').trim()
         .isLength({ min: 1, max: 30 }).withMessage('Username must be between 1 and 30 characters.')
         .custom(async value => {
@@ -17,7 +19,7 @@ const validateSignup = [
             }
         }),
     body('password').trim()
-        .isLength({ min: 7 }).withMessage('Password must be atleast 7 characters long.'),
+        .isLength({ min: 7, max: 30 }).withMessage('Password must be between 7 and 30 characters.'),
     body('confirmPassword').custom((value, {req}) => {
         return value === req.body.password;
     }).withMessage('Passwords do not match.'),
@@ -111,7 +113,7 @@ async function getFolder(req, res, next) {
                 editType: editType,
                 rootFolder: rootFolder,
                 shareFolderId: shareFolderId,
-                message: msg
+                messages: msg
             })
         }
     } catch (err) {

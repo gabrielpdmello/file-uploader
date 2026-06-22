@@ -1,6 +1,10 @@
-<% if (locals.message) { %>
+<% if (locals.messages) { %>
 <div class="modal">
-    <span><%= message %></span>
+    <ul>
+    <% messages.forEach(function(message) { %>
+        <li><%= message.msg %></li>
+    <% }); %>
+    </ul>
     <button class="btn--small--white" onclick="hideModal()">close</button>
 </div>
 <% } %>
