@@ -36,7 +36,7 @@ const postAddFolder = [
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             const backURL = req.get('Referer') || '/';
-            req.session.msg = errors.array();
+            req.session.errors = errors.array();
             return res.status(400).redirect(backURL);
         }
 
@@ -48,7 +48,7 @@ const postAddFolder = [
                 const trashFolder = await storagedb.getTrashFolder(req.user.id);
 
                 if (currentFolder.id == trashFolder.id) {
-                    req.session.msg = ["Cannot create folder inside trash bin."];
+                    req.session.msg = "Cannot create folder inside trash bin.";
                     const backURL = req.get('Referer') || '/';
                     res.redirect(backURL);
                 } else {

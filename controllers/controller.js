@@ -93,7 +93,9 @@ async function getFolder(req, res, next) {
             const files = await storagedb.getFiles(folder.id);
             let editItem;
             const msg = req.session.msg;
+            const errors = req.session.errors;
             req.session.msg = '';
+            req.session.errors = '';
 
             if (editItemType == "folder") {
                 editItem = await storagedb.getFolder(editItemId);
@@ -113,7 +115,8 @@ async function getFolder(req, res, next) {
                 editType: editType,
                 rootFolder: rootFolder,
                 shareFolderId: shareFolderId,
-                messages: msg
+                message: msg,
+                errors: errors
             })
         }
     } catch (err) {

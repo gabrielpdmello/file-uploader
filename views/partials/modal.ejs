@@ -1,9 +1,16 @@
-<% if (locals.messages) { %>
+<% if (locals.message) { %>
+<div class="modal">
+    <span><%= message %></span>
+    <button class="btn--small--white" onclick="hideModal()">close</button>
+</div>
+<% } %>
+
+<% if (locals.errors) { %>
 <div class="modal">
     <ul>
-    <% messages.forEach(function(message) { %>
-        <li><%= message.msg %></li>
-    <% }); %>
+        <% errors.forEach(function(error) { %>
+        <li><%= error.msg %></li>
+        <% }); %>
     </ul>
     <button class="btn--small--white" onclick="hideModal()">close</button>
 </div>
