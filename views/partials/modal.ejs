@@ -1,4 +1,6 @@
+<% if (locals.message) { %>
 <div class="modal">
-    <span>mensagem</span>
+    <span><%= message %></span>
     <button class="btn--small--white" onclick="hideModal()">close</button>
 </div>
+<% } %>

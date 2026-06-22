@@ -220,8 +220,21 @@ async function postMoveFolder(req, res, next) {
     const folderId = req.params.folderId;
     const currentFolderId = req.body.currentFolder;
     try {
-        await storagedb.moveFolder(folderId, currentFolderId)
-        res.redirect(`/folder/${currentFolderId}`)
+        const childrenFolders = await storagedb.getPath(currentFolderId)
+
+        for (folder of childrenFolders) {
+            if (folder.id === folderId) {
+                const backURL = req.get('Referer') || '/';
+                req.session.msg = "Cannot move folder inside itself."
+                res.redirect(backURL)
+            }
+        }
+
+        if (!res.headersSent) {
+            await storagedb.moveFolder(folderId, currentFolderId)
+            res.redirect(`/folder/${currentFolderId}`)
+        }
+
     } catch (err) {
         next(err)
     }
