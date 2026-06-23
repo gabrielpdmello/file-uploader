@@ -217,7 +217,7 @@ async function updateFolderSize(folderId, size) {
 }
 
 async function deleteFile(id) {
-    const file = await prisma.file.delete({
+    const file = await prisma.file.deleteMany({
         where: {
             id: id,
         }
@@ -236,7 +236,7 @@ async function deleteFolder(id) {
     SELECT f.* FROM folderTree ft
     join "File" f on (ft.id = f."folderId");
     `;
-    const folder = await prisma.folder.delete({
+    const folder = await prisma.folder.deleteMany({
         where: {
             id: id,
         }
