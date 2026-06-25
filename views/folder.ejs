@@ -55,7 +55,7 @@
                     <input type="hidden" name="currentFolder" value="<%= currentFolder.id %>">
                     <div>
                         <button class="btn--small" type="submit">Move here</button>
-                        <a class="btn--small" href="/<%= rootFolder %>/<%= currentFolder.id %>">Cancel</a>
+                        <a class="btn--small" href="/<%= rootFolder %>/<% !currentFolder.parentId ? currentFolder.name : currentFolder.id %>">Cancel</a>
                     </div>
                 </form>
             <% } %>
