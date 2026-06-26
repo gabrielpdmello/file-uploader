@@ -1,9 +1,10 @@
 const bcrypt = require('bcryptjs');
 const user = require('../queries/user');
 const passport = require("../config/passport")
-const storagedb = require('../queries/storage');
+const db = require('../queries/storage');
 const { filesize, partial } = require('filesize');
 const { body, validationResult } = require("express-validator");
+const multer = require('multer');
 
 require('dotenv').config();
 
@@ -13,7 +14,7 @@ const validateSignup = [
     body('username').trim()
         .isLength({ min: 1, max: 30 }).withMessage('Username must be between 1 and 30 characters.')
         .custom(async value => {
-            const username = await storagedb.getUser(value);
+            const username = await db.getUser(value);
             if (username?.username) {
                 throw new Error("Username is already in use, choose another.")
             }
@@ -64,17 +65,17 @@ async function getFolder(req, res, next) {
         let childrenFolders;
 
         if (originalUrl.includes('/folder/root')) {
-            folder = await storagedb.getRootFolder(req.user?.id);
-            childrenFolders = await storagedb.getChildrenFolders(folder.id)
+            folder = await db.getRootFolder(req.user?.id);
+            childrenFolders = await db.getChildrenFolders(folder.id)
         } else if (originalUrl.includes('/trash/root')) {
-            folder = await storagedb.getTrashFolder(req.user?.id);
-            childrenFolders = await storagedb.getChildrenFolders(folder.id)
+            folder = await db.getTrashFolder(req.user?.id);
+            childrenFolders = await db.getChildrenFolders(folder.id)
         } else if (originalUrl.includes('/share/root')) {
-            folder = await storagedb.getShareFolder(req.user?.id);
-            childrenFolders = await storagedb.getSharedFolders(folder.id)
+            folder = await db.getShareFolder(req.user?.id);
+            childrenFolders = await db.getSharedFolders(folder.id)
         } else {
-            folder = await storagedb.getFolder(folderId);
-            childrenFolders = await storagedb.getChildrenFolders(folder.id)
+            folder = await db.getFolder(folderId);
+            childrenFolders = await db.getChildrenFolders(folder.id)
         }
 
         if (originalUrl.includes('folder')) {
@@ -90,7 +91,7 @@ async function getFolder(req, res, next) {
         } else if (req.user == null && rootFolder != 'share') {
             res.redirect("/login");
         } else {
-            const files = await storagedb.getFiles(folder.id);
+            const files = await db.getFiles(folder.id);
             let editItem;
             const msg = req.session.msg;
             const errors = req.session.errors;
@@ -98,9 +99,9 @@ async function getFolder(req, res, next) {
             req.session.errors = '';
 
             if (editItemType == "folder") {
-                editItem = await storagedb.getFolder(editItemId);
+                editItem = await db.getFolder(editItemId);
             } else if (editItemType == "file") {
-                editItem = await storagedb.getFile(editItemId);
+                editItem = await db.getFile(editItemId);
             }
 
             res.render('folder', {
@@ -108,7 +109,7 @@ async function getFolder(req, res, next) {
                 files: files,
                 currentFolder: folder,
                 daysDelete: process.env.DAYS_TO_DELETE,
-                path: await storagedb.getPath(folder.id),
+                path: await db.getPath(folder.id),
                 filesize: filesize,
                 editItem: editItem,
                 editItemType: editItemType,
@@ -170,10 +171,14 @@ function getUpload(req, res) {
 }
 
 function errorHandler(err, req, res, next) {
-    res.status(500);
-    console.log(err);
-    res.render('error');
-
+     if (err instanceof multer.MulterError) {
+        const backURL = req.get('Referer') || '/';
+        req.session.msg = err.field;
+        return res.status(400).redirect(backURL);
+    } else if (err) {
+        return res.status(500).render('error');
+    }
+    next()
 }
 
 module.exports = {
