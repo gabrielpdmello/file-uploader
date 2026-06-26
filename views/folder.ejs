@@ -20,9 +20,9 @@
                     <button class="btn" type="submit">Add</button>
                 </form>
                 <form action="/upload" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="currentFolder" value="<%= currentFolder.id %>">
                     <label class="btn w-100" for="files">Upload file(s)</label>
                     <input type="file" id="files" name="files" onchange="form.submit()" multiple>
-                    <input type="hidden" name="currentFolder" value="<%= currentFolder.id %>">
                 </form>
             </div>
         <% } %>

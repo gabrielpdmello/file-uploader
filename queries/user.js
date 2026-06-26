@@ -8,7 +8,7 @@ async function createUser(name, username, password) {
             password: password,
         }
     })
-    const rootFolder = await prisma.folder.create({
+    await prisma.folder.create({
         data: {
             name: "root",
             user: {
@@ -16,20 +16,25 @@ async function createUser(name, username, password) {
             }
         }
     })
-    const trashFolder = await prisma.folder.create({
+    await prisma.folder.create({
         data: {
             name: "trash",
             user: {
                 connect: {id: user.id}
-            }
+            },
+            accept_file: false,
+            accept_folder: false
+
         }
     })
-    const shareFolder = await prisma.folder.create({
+    await prisma.folder.create({
         data: {
             name: "share",
             user: {
                 connect: {id: user.id}
-            }
+            },
+            accept_file: false,
+            accept_folder: false
         }
     })
 }

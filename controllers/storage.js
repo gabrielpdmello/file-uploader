@@ -18,11 +18,13 @@ const multerStorage = multer.diskStorage({
     }
 })
 
-const multerFileFilter = (req, file, cb) => {
-    const referer = req.get('Referer');
-    const maxLength = 200
+const multerFileFilter = async (req, file, cb) => {
+    const currentFolder = await db.getFolder(req.body.currentFolder);
+    const maxLength = 200;
     if (file.originalname.length > 200 && file.originalname.length <= 0) {
         cb(new multer.MulterError('LIMIT_UNEXPECTED_FILE', 'File name length must be between 1 and 200.'), false); 
+    } else if (!currentFolder.accept_file) {
+        cb(new multer.MulterError('LIMIT_UNEXPECTED_FILE', 'Cannot upload files in this folder.'), false); 
     } else {
         cb(null, true);
     }
@@ -64,8 +66,8 @@ const postAddFolder = [
                 const shareFolder = await db.getShareFolder(req.user.id);
                 const backURL = req.get('Referer') || '/';
 
-                if (currentFolder.id == trashFolder.id) {
-                    req.session.msg = "Cannot create folder inside trash bin.";
+                if (!currentFolder.accept_folder) {
+                    req.session.msg = "Cannot create folder inside this folder.";
                     res.redirect(backURL);
                 } else {
                     const parentId = currentFolder.id;

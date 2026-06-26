@@ -37,6 +37,8 @@ model Folder {
   share_folder_id String?
   share_date DateTime?
   last_update DateTime @default(now())
+  accept_file Boolean @default(true)
+  accept_folder Boolean @default(true)
 }
 
 model File {
