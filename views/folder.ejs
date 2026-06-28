@@ -6,43 +6,12 @@
 </head>
 <body>
     <%- include("partials/header.ejs") %>
-    <div class="container">
+    <main class="container">
         <% if(currentUser) { %>
-            <div class="sidebar">
-                <a class="btn d-block" href="/folder/root">Home</a>
-                <a class="btn d-block" href="/trash/root">Trash</a>
-                <a class="btn d-block" href="/share/root">Share</a>
-                <form class="add-data" action="/addfolder" method="post">
-                    <label for="name">Add folder</label>
-                    <input type="text" name="name" id="name">
-                    <input type="hidden" name="owner" value="<%= currentUser?.id %>">
-                    <input type="hidden" name="currentFolder" value="<%= currentFolder.id %>">
-                    <button class="btn" type="submit">Add</button>
-                </form>
-                <form action="/upload" method="post" enctype="multipart/form-data">
-                    <input type="hidden" name="currentFolder" value="<%= currentFolder.id %>">
-                    <label class="btn w-100" for="files">Upload file(s)</label>
-                    <input type="file" id="files" name="files" onchange="form.submit()" multiple>
-                </form>
-            </div>
+            <%- include("partials/sidebar.ejs") %>
         <% } %>
         <div class="file-container">
-            <div class="file-path">
-                <span>Path:</span>
-                <% if (rootFolder == 'folder') { %>
-                    <a href="/folder/root<%= editType=="move" ? `?editType=${editType}&editItemId=${editItem?.id}&editItemType=folder` : '' %>">Home</a>
-                <% } %>
-                <% if (rootFolder == "trash") { %>
-                    <a href="/trash/root">Trash</a>
-                <% } %>
-                <% if (rootFolder == "share") { %>
-                    <a href="/share/root">Share</a>
-                <% } %>
-                <% path.slice(1).forEach((folder) => { %>
-                    <span> / </span>
-                    <a href="/<%= rootFolder %>/<%= folder.id %><%= editType=="move" ? `?editType=${editType}&editItemId=${editItem?.id}&editItemType=folder` : '' %>"><%= folder.name %></a>
-                <% }) %>
-            </div>
+            <%- include("partials/filepath.ejs") %>
             <% if (rootFolder == "trash") { %>
             <div>
                 <p>Files and folders will be deleted in <%= daysDelete %> days after being moved to trash.</p>
@@ -50,157 +19,156 @@
             <% } %>
             <div>
             <% if (editType == "move") { %>
-                <form class="moving-item" action="/move-<%= editItemType %>/<%= editItem.id %>" method="post">
-                    <span>Moving <%= editItemType %> <%= editItem.name %></span>
-                    <input type="hidden" name="currentFolder" value="<%= currentFolder.id %>">
-                    <div>
-                        <button class="btn--small" type="submit">Move here</button>
-                        <a class="btn--small" href="/<%= rootFolder %>/<% !currentFolder.parentId ? currentFolder.name : currentFolder.id %>">Cancel</a>
-                    </div>
-                </form>
+            <form class="moving-item" action="/move-<%= editItemType %>/<%= editItem.id %>" method="post">
+                <span>Moving <%= editItemType %> <%= editItem.name %></span>
+                <input type="hidden" name="currentFolder" value="<%= currentFolder.id %>">
+                <div>
+                    <button class="btn--small" type="submit">Move here</button>
+                    <a class="btn--small" href="/<%= rootFolder %>/<% !currentFolder.parentId ? currentFolder.name : currentFolder.id %>">Cancel</a>
+                </div>
+            </form>
             <% } %>
-            <% if (folders.length < 1 && files.length < 1) { %>
+            <% if (currentFolder.childrenFolders.length < 1 && currentFolder.files.length < 1) { %>
             <span class="empty">This folder is empty</span>
             <% } else { %>
-                <table>
-                    <thead>
-                        <tr>
-                            <td class="column-name">Name</td>
-                            <td class="column-updated">Last updated</td>
-                            <% if (currentFolder.name == "share") { %>
-                            <td class="column-share">Share until</td>
-                            <% } %>
-                            <td class="column-size">Size</td>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% if (folders.length > 0) { %>
-                            <% folders.forEach(folder => {  %>
-                            <% if (folder.id !== editItem?.id) { %>
-                                <tr class="folder-row">
-                                    <td>
-                                    <div class="flex-container">
-                                            <span class="icon--folder"></span>
-                                            <% if (editItem?.id == folder.id && editType == "rename") { %>
-                                                <form class="edit-form" action="/rename-folder/<%= folder.id %>" method="post">
-                                                    <input type="text" id="name" name="name" value="<%= folder.name %>">
-                                                    <input type="hidden" name="currentFolder" value="<%= currentFolder.id %>">
-                                                    <button class="btn--small" type="submit">Rename</button>
-                                                    <a class="btn--small" href="/<%= rootFolder %>/<%= currentFolder.id %>">Cancel</a>
-                                                </form>
-                                            <% } else { %>
-                                                <a class="item-name folder-link" href="/<%= rootFolder %>/<%= folder.id %><%= editItem!=null ? `?editType=${editType}&editItemId=${editItem.id}&editItemType=${editItemType}` : '' %>"><%= folder.name %></a>
-                                            <% } %>
-                                    </div>
-                                    </td>
-                                    <td><%= folder.last_update.toLocaleDateString() %></td>
-                                    <% if (currentFolder.name == "share" && currentFolder.parentId == null) { %>
-                                    <td><%= folder.share_date.toLocaleDateString() %></td>
-                                    <% } %>
-                                    <td><%= filesize(folder.size) %></td>
-                                    <td>
-                                        <div class="btn-container">
-                                            <% if (currentUser) { %>
-                                            <% if (path[0].name=="trash") { %>
-                                            <form action="/delete-folder/<%= folder.id %>" method="post">
-                                                <button class="btn-icon icon--delete" type="submit" title="Delete Folder"></button>
-                                            </form>
-                                            <form action="/restore-folder/<%= folder.id %>" method="post">
-                                                <button class="btn-icon icon--restore" type="submit" title="Restore Folder"></button>
-                                            </form>
-                                            <% } else { %>
-                                            <a href="/<%= rootFolder %>/<%= currentFolder.id %>?editType=rename&editItemId=<%= folder.id %>&editItemType=folder">
-                                                <span class="btn-icon icon--rename" title="Rename Folder"></span>
-                                            </a>
-                                            <a href="/<%= rootFolder %>/<%= currentFolder.id %>?editType=move&editItemId=<%= folder.id %>&editItemType=folder">
-                                                <span class="btn-icon icon--move" title="Move Folder"></span>
-                                            </a>
-                                            <form action="/trash-folder/<%= folder.id %>" method="post">
-                                                <button class="btn-icon icon--delete" type="submit" title="Move Folder to Trash"></button>
-                                                <input type="hidden" name="currentFolder" value="<%= currentFolder.id %>">
-                                            </form>                          
-                                            <% } %>              
-                                            <% if (rootFolder == "share") { %>
-                                            <form action="/unshare-folder/<%= folder.id %>" method="post">
-                                                <button class="btn-icon icon--unshare" type="submit" title="Stop sharing folder"></button>
-                                            </form>
-                                            <% } else { %>
-                                            <a href="/<%= rootFolder %>/<%= currentFolder.id %>?shareFolderId=<%= folder.id %>">
-                                                <span class="btn-icon icon--share" title="Share Folder"></span>
-                                            </a>
-                                            <% } %>
-                                            <% } %>
-                                        </div>
-                                        <% if (shareFolderId == folder.id) { %>
-                                            <div class="share-container">
-                                                <form action="/share-folder/<%= shareFolderId %>" method="post">
-                                                    <label for="days">Share for (days):</label>
-                                                    <input class="share-input" type="number" placeholder="Days" id="days" name="days">
-                                                    <button class="btn--small" type="submit">Share</button>
-                                                </form>
-                                            </div>
-                                        <% } %>
-                                    </td>
-                                </tr>
-                            <% } %>
-                            <% }) %>
+            <table>
+                <thead>
+                    <tr>
+                        <td class="column-name">Name</td>
+                        <td class="column-updated">Last updated</td>
+                        <% if (currentFolder.name == "share") { %>
+                        <td class="column-share">Share until</td>
                         <% } %>
-                        <% if (files.length > 0) { %>
-                            <% files.forEach(file => {  %>
-                            <tr>
-                                <td class="flex-container name-cell">
-                                    <span class="icon--file"></span>
-                                    <% if (editItem?.id == file.id && editType == "rename") { %>
-                                    <form class="edit-form" action="/rename-file/<%= file.id %>" method="post">
-                                        <input type="text" id="name" name="name" value="<%= file.name %>">
+                        <td class="column-size">Size</td>
+                    </tr>
+                </thead>
+                <tbody>
+                <% if (currentFolder.childrenFolders.length > 0) { %>
+                    <% currentFolder.childrenFolders.forEach(folder => {  %>
+                        <% if (folder.id !== editItem?.id) { %>
+                        <tr class="folder-row">
+                            <td>
+                                <div class="flex-container">
+                                    <span class="icon--folder"></span>
+                                    <% if (editItem?.id == folder.id && editType == "rename") { %>
+                                    <form class="edit-form" action="/rename-folder/<%= folder.id %>" method="post">
+                                        <input type="text" id="name" name="name" value="<%= folder.name %>">
                                         <input type="hidden" name="currentFolder" value="<%= currentFolder.id %>">
                                         <button class="btn--small" type="submit">Rename</button>
                                         <a class="btn--small" href="/<%= rootFolder %>/<%= currentFolder.id %>">Cancel</a>
                                     </form>
                                     <% } else { %>
-                                    <span class="item-name"><%= file.name %></span>
+                                    <a class="item-name folder-link" href="/<%= rootFolder %>/<%= folder.id %><%= editItem!=null ? `?editType=${editType}&editItemId=${editItem.id}&editItemType=${editItemType}` : '' %>"><%= folder.name %></a>
                                     <% } %>
-                                </td>
-                                <td><%= file.last_update.toLocaleDateString() %></td>
-                                <td><%= filesize(file.size) %></td>
-                                <td>
-                                    <div class="btn-container">
-                                        <% if (currentUser) { %>
-                                            <% if (rootFolder == "trash") { %>
-                                            <form action="/delete-file/<%= file.id %>" method="post">
-                                                <button class="btn-icon icon--delete" type="submit" title="Delete File"></button>
-                                            </form>
-                                            <form action="/restore-file/<%= file.id %>" method="post">
-                                                <button class="btn-icon icon--restore" type="submit" title="Restore File"></button>
-                                            </form>
-                                            <% } else { %>
-                                            <a href="/<%= rootFolder %>/<%= currentFolder.id %>?editType=rename&editItemId=<%= file.id %>&editItemType=file">
-
-                                                <span class="btn-icon icon--rename" title="Rename File"></span>
-                                            </a>
-                                            <a href="/<%= rootFolder %>/<%= currentFolder.id %>?editType=move&editItemId=<%= file.id %>&editItemType=file">
-                                                <span class="btn-icon icon--move" title="Move File"></span>
-                                            </a>
-                                            <form action="/trash-file/<%= file.id %>" method="post">
-                                                <button class="btn-icon icon--delete" type="submit" title="Move File to Trash"></button>
-                                                <input type="hidden" name="currentFolder" value="<%= currentFolder.id %>">
-                                            </form>
-                                        <% } %>
-                                        <% } %>
-                                        <form action="/download/<%= file.id %>" method="post">
-                                            <button class="btn-icon icon--download" type="submit" title="Download File"></button>
+                                </div>
+                            </td>
+                            <td><%= folder.last_update.toLocaleDateString() %></td>
+                            <% if (currentFolder.name == "share" && currentFolder.parentId == null) { %>
+                            <td><%= folder.share_date.toLocaleDateString() %></td>
+                            <% } %>
+                            <td><%= filesize(folder.size) %></td>
+                            <td>
+                                <div class="btn-container">
+                                    <% if (currentUser) { %>
+                                        <% if (rootFolder=="trash") { %>
+                                        <form action="/delete-folder/<%= folder.id %>" method="post">
+                                            <button class="btn-icon icon--delete" type="submit" title="Delete Folder"></button>
                                         </form>
-                                    </div>
-                                </td>
-                            </tr>
-                            <% }) %>
+                                        <form action="/restore-folder/<%= folder.id %>" method="post">
+                                            <button class="btn-icon icon--restore" type="submit" title="Restore Folder"></button>
+                                        </form>
+                                        <% } else { %>
+                                        <a href="/<%= rootFolder %>/<%= currentFolder.id %>?editType=rename&editItemId=<%= folder.id %>&editItemType=folder">
+                                            <span class="btn-icon icon--rename" title="Rename Folder"></span>
+                                        </a>
+                                        <a href="/<%= rootFolder %>/<%= currentFolder.id %>?editType=move&editItemId=<%= folder.id %>&editItemType=folder">
+                                            <span class="btn-icon icon--move" title="Move Folder"></span>
+                                        </a>
+                                        <form action="/trash-folder/<%= folder.id %>" method="post">
+                                            <button class="btn-icon icon--delete" type="submit" title="Move Folder to Trash"></button>
+                                            <input type="hidden" name="currentFolder" value="<%= currentFolder.id %>">
+                                        </form>                          
+                                        <% } %>              
+                                        <% if (rootFolder == "share") { %>
+                                        <form action="/unshare-folder/<%= folder.id %>" method="post">
+                                            <button class="btn-icon icon--unshare" type="submit" title="Stop sharing folder"></button>
+                                        </form>
+                                        <% } else { %>
+                                        <a href="/<%= rootFolder %>/<%= currentFolder.id %>?shareFolderId=<%= folder.id %>">
+                                            <span class="btn-icon icon--share" title="Share Folder"></span>
+                                        </a>
+                                        <% } %>
+                                    <% } %>
+                                </div>
+                                <% if (shareFolderId == folder.id) { %>
+                                <div class="share-container">
+                                    <form action="/share-folder/<%= shareFolderId %>" method="post">
+                                        <label for="days">Share for (days):</label>
+                                        <input class="share-input" type="number" placeholder="Days" id="days" name="days">
+                                        <button class="btn--small" type="submit">Share</button>
+                                    </form>
+                                </div>
+                                <% } %>
+                            </td>
+                        </tr>
                         <% } %>
-                    </tbody>
-                </table>
+                    <% }) %>
+                <% } %>
+                    <% if (currentFolder.files.length > 0) { %>
+                        <% currentFolder.files.forEach(file => {  %>
+                        <tr>
+                            <td class="flex-container name-cell">
+                                <span class="icon--file"></span>
+                                <% if (editItem?.id == file.id && editType == "rename") { %>
+                                <form class="edit-form" action="/rename-file/<%= file.id %>" method="post">
+                                    <input type="text" id="name" name="name" value="<%= file.name %>">
+                                    <input type="hidden" name="currentFolder" value="<%= currentFolder.id %>">
+                                    <button class="btn--small" type="submit">Rename</button>
+                                    <a class="btn--small" href="/<%= rootFolder %>/<%= currentFolder.id %>">Cancel</a>
+                                </form>
+                                <% } else { %>
+                                <span class="item-name"><%= file.name %></span>
+                                <% } %>
+                            </td>
+                            <td><%= file.last_update.toLocaleDateString() %></td>
+                            <td><%= filesize(file.size) %></td>
+                            <td>
+                                <div class="btn-container">
+                                    <% if (currentUser) { %>
+                                        <% if (rootFolder == "trash") { %>
+                                        <form action="/delete-file/<%= file.id %>" method="post">
+                                            <button class="btn-icon icon--delete" type="submit" title="Delete File"></button>
+                                        </form>
+                                        <form action="/restore-file/<%= file.id %>" method="post">
+                                            <button class="btn-icon icon--restore" type="submit" title="Restore File"></button>
+                                        </form>
+                                        <% } else { %>
+                                        <a href="/<%= rootFolder %>/<%= currentFolder.id %>?editType=rename&editItemId=<%= file.id %>&editItemType=file">
+                                            <span class="btn-icon icon--rename" title="Rename File"></span>
+                                        </a>
+                                        <a href="/<%= rootFolder %>/<%= currentFolder.id %>?editType=move&editItemId=<%= file.id %>&editItemType=file">
+                                            <span class="btn-icon icon--move" title="Move File"></span>
+                                        </a>
+                                        <form action="/trash-file/<%= file.id %>" method="post">
+                                            <button class="btn-icon icon--delete" type="submit" title="Move File to Trash"></button>
+                                            <input type="hidden" name="currentFolder" value="<%= currentFolder.id %>">
+                                        </form>
+                                        <% } %>
+                                    <% } %>
+                                    <form action="/download/<%= file.id %>" method="post">
+                                        <button class="btn-icon icon--download" type="submit" title="Download File"></button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        <% }) %>
+                    <% } %>
+                </tbody>
+            </table>
             <% } %>
             </div>
         </div>
-    </div>
+    </main>
     <%- include("partials/modal") %>
 </body>
 </html>

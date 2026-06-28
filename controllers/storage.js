@@ -7,12 +7,12 @@ const upload = require('../config/multer');
 
 const validateFile = [
     body('name').trim()
-        .isLength({min: 1, max: 100}).withMessage("File name must be between 1 and 100 characters.")
+        .isLength({ min: 1, max: 100 }).withMessage("File name must be between 1 and 100 characters.")
 ]
 
 const validateFolder = [
     body('name').trim()
-        .isLength({min: 1, max: 100}).withMessage("Folder name must be between 1 and 100 characters.")
+        .isLength({ min: 1, max: 100 }).withMessage("Folder name must be between 1 and 100 characters.")
 ]
 
 const postAddFolder = [
@@ -29,7 +29,7 @@ const postAddFolder = [
 
         try {
             if (!req.user) {
-                res.redirect('/login');
+                return res.redirect('/login');
             } else {
                 const currentFolder = await db.getFolder(currentFolderId);
                 const trashFolder = await db.getTrashFolder(req.user.id);
@@ -37,8 +37,8 @@ const postAddFolder = [
                 const backURL = req.get('Referer') || '/';
 
                 if (!currentFolder.accept_folder) {
-                    req.session.msg = "Cannot create folder inside this folder.";
-                    res.redirect(backURL);
+                    req.session.msg = "Cannot create folder here.";
+                    return res.redirect(backURL);
                 } else {
                     const parentId = currentFolder.id;
                     const ownerId = currentFolder.ownerId;
@@ -48,13 +48,10 @@ const postAddFolder = [
             }
 
         } catch (err) {
-            next(err)
+            return next(err)
         }
-        if (!res.headersSent) {
-            const backURL = req.get('Referer') || '/';
-            res.redirect(backURL);
-        }
-
+        const backURL = req.get('Referer') || '/';
+        res.redirect(backURL);
     }
 ]
 
@@ -75,7 +72,7 @@ const postUpload = [
                 await db.addFile(filename, originalname, currentFolder, filesize)
                 await db.increaseFolderSize(currentFolder, filesize)
             } catch (err) {
-                next(err)
+                return next(err)
             }
         }
         const backURL = req.get('Referer') || '/';
@@ -101,7 +98,7 @@ async function postDeleteFile(req, res, next) {
         const deletedFile = await db.deleteFile(fileId);
         await fs.unlink(filePath)
     } catch (err) {
-        next(err)
+        return next(err)
     }
     const backURL = req.get('Referer') || '/';
     res.redirect(backURL);
@@ -120,7 +117,7 @@ async function postTrashFile(req, res, next) {
         deleteDate.setDate(deleteDate.getDate() + Number(process.env.DAYS_TO_DELETE) || 7)
         await db.addJob("delete", fileId, "file", deleteDate)
     } catch (err) {
-        next(err)
+        return next(err)
     }
     const backURL = req.get('Referer') || '/';
     res.redirect(backURL);
@@ -136,10 +133,10 @@ async function postTrashFolder(req, res, next) {
         await db.moveFolder(folder.id, trashFolder.id)
         const updateSize = await db.decreaseFolderSize(currentFolder, folder.size)
         const deleteDate = new Date();
-        deleteDate.setDate(deleteDate.getDate() + Number(process.env.DAYS_TO_DELETE))    
+        deleteDate.setDate(deleteDate.getDate() + Number(process.env.DAYS_TO_DELETE))
         await db.addJob("delete", folderId, "folder", deleteDate)
     } catch (err) {
-        next(err)
+        return next(err)
     }
     const backURL = req.get('Referer') || '/';
     res.redirect(backURL);
@@ -159,7 +156,7 @@ async function postDeleteFolder(req, res, next) {
         const backURL = req.get('Referer') || '/';
         res.redirect(backURL);
     } catch (err) {
-        next(err)
+        return next(err)
     }
 }
 
@@ -171,7 +168,7 @@ async function postRestoreFile(req, res, next) {
         await db.increaseFolderSize(file.previousFolderId, file.size)
         await db.removeJob(fileId);
     } catch (err) {
-        next(err)
+        return next(err)
     }
     const backURL = req.get('Referer') || '/';
     res.redirect(backURL);
@@ -179,7 +176,7 @@ async function postRestoreFile(req, res, next) {
 
 async function postRestoreFolder(req, res, next) {
     const folderId = req.params.folderId;
-    
+
     try {
         const folder = await db.getFolder(folderId)
 
@@ -194,9 +191,9 @@ async function postRestoreFolder(req, res, next) {
             await db.restoreFolder(folderId)
             await db.removeJob(folder.id);
         }
-        
+
     } catch (err) {
-        next(err)
+        return next(err)
     }
     const backURL = req.get('Referer') || '/';
     res.redirect(backURL);
@@ -210,7 +207,7 @@ async function postRenameFile(req, res, next) {
     try {
         await db.renameFile(fileId, name)
     } catch (err) {
-        next(err)
+        return next(err)
     }
     const backURL = req.get('Referer') || '/';
     res.redirect(backURL);
@@ -224,7 +221,7 @@ async function postRenameFolder(req, res, next) {
         await db.renameFolder(folderId, name)
         res.redirect(`/folder/${currentFolderId}`)
     } catch (err) {
-        next(err)
+        return next(err)
     }
 }
 
@@ -235,7 +232,7 @@ async function postMoveFile(req, res, next) {
         await db.moveFile(fileId, currentFolderId)
         res.redirect(`/folder/${currentFolderId}`)
     } catch (err) {
-        next(err)
+        return next(err)
     }
 }
 
@@ -249,17 +246,13 @@ async function postMoveFolder(req, res, next) {
             if (folder.id === folderId) {
                 const backURL = req.get('Referer') || '/';
                 req.session.msg = "Cannot move folder inside itself."
-                res.redirect(backURL)
+                return res.redirect(backURL)
             }
         }
-
-        if (!res.headersSent) {
-            await db.moveFolder(folderId, currentFolderId)
-            res.redirect(`/folder/${currentFolderId}`)
-        }
-
+        await db.moveFolder(folderId, currentFolderId)
+        res.redirect(`/folder/${currentFolderId}`)
     } catch (err) {
-        next(err)
+        return next(err)
     }
 }
 
@@ -275,7 +268,7 @@ async function postShareFolder(req, res, next) {
         await db.shareFolder(folderId, shareDate)
         await db.addJob("unshare", folderId, "folder", shareDate)
     } catch (err) {
-        next(err)
+        return next(err)
     }
     res.redirect(`/folder/${currentFolder}`);
 }
@@ -285,8 +278,8 @@ async function postUnshareFolder(req, res, next) {
     try {
         await db.unshareFolder(folderId);
         await db.removeJob(folderId);
-    } catch(err) {
-        next(err)
+    } catch (err) {
+        return next(err)
     }
     const backURL = req.get('Referer') || '/';
     res.redirect(backURL);

@@ -1,0 +1,17 @@
+<div class="sidebar">
+    <a class="btn d-block" href="/folder/root">Home</a>
+    <a class="btn d-block" href="/trash/root">Trash</a>
+    <a class="btn d-block" href="/share/root">Shared folders</a>
+    <form class="add-data" action="/addfolder" method="post">
+        <label for="name">Add folder</label>
+        <input type="text" name="name" id="name">
+        <input type="hidden" name="owner" value="<%= currentUser?.id %>">
+        <input type="hidden" name="currentFolder" value="<%= currentFolder.id %>">
+        <button class="btn" type="submit">Add</button>
+    </form>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="currentFolder" value="<%= currentFolder.id %>">
+        <label class="btn w-100" for="files">Upload file(s)</label>
+        <input type="file" id="files" name="files" onchange="form.submit()" multiple>
+    </form>
+</div>

@@ -21,7 +21,7 @@ const validateSignup = [
         }),
     body('password').trim()
         .isLength({ min: 7, max: 30 }).withMessage('Password must be between 7 and 30 characters.'),
-    body('confirmPassword').custom((value, {req}) => {
+    body('confirmPassword').custom((value, { req }) => {
         return value === req.body.password;
     }).withMessage('Passwords do not match.'),
 ];
@@ -29,101 +29,148 @@ const validateSignup = [
 async function locals(req, res, next) {
     res.locals.currentUser = req.user;
     res.locals.errorMessage = req.flash('error');
-    next();
+    return next();
 }
 
 async function index(req, res) {
-    res.render("index", {repoUrl: process.env.REPOURL});
+    res.status(200).render("index", { repoUrl: process.env.REPOURL });
 }
 
 async function getRoot(req, res) {
-    res.redirect("/folder/root");
+    res.status(301).redirect("/folder/root");
 }
 
 async function getTrash(req, res) {
-    res.redirect("/trash/root");
+    res.status(301).redirect("/trash/root");
 }
 
 async function getShare(req, res) {
-    res.redirect("/share/root");
+    res.status(301).redirect("/share/root");
 }
 
 function getSignup(req, res) {
-    res.render("signup");
+    res.status(200).render("signup");
 }
 
-async function getFolder(req, res, next) {
-    const folderId = req.params.folderId;
-    const editItemId = req.query.editItemId;
-    const editItemType = req.query.editItemType;
-    let shareFolderId = req.query.shareFolderId;
-    let editType = req.query.editType;
+async function fetchFolderData(req, res, next) {
     const originalUrl = req.originalUrl;
-    try {
-        let folder;
-        let rootFolder;
-        let childrenFolders;
+    const folderId = req.params.folderId;
+    const user = req.user;
+    let folderData;
 
+    try {
         if (originalUrl.includes('/folder/root')) {
-            folder = await db.getRootFolder(req.user?.id);
-            childrenFolders = await db.getChildrenFolders(folder.id)
+            folderData = await db.getRootFolder(user?.id);
+            folderData.childrenFolders = await db.getChildrenFolders(folderData.id)
         } else if (originalUrl.includes('/trash/root')) {
-            folder = await db.getTrashFolder(req.user?.id);
-            childrenFolders = await db.getChildrenFolders(folder.id)
+            folderData = await db.getTrashFolder(user?.id);
+            folderData.childrenFolders = await db.getChildrenFolders(folderData.id)
         } else if (originalUrl.includes('/share/root')) {
-            folder = await db.getShareFolder(req.user?.id);
-            childrenFolders = await db.getSharedFolders(folder.id)
+            folderData = await db.getShareFolder(user?.id);
+            folderData.childrenFolders = await db.getSharedFolders(folderData.id)
         } else {
-            folder = await db.getFolder(folderId);
-            childrenFolders = await db.getChildrenFolders(folder.id)
+            folderData = await db.getFolder(folderId);
+            folderData.childrenFolders = await db.getChildrenFolders(folderData.id)
         }
 
         if (originalUrl.includes('folder')) {
-            rootFolder = 'folder';
+            folderData.rootFolder = 'folder';
         } else if (originalUrl.includes('trash')) {
-            rootFolder = 'trash';
+            folderData.rootFolder = 'trash';
         } else if (originalUrl.includes('share')) {
-            rootFolder = 'share';
+            folderData.rootFolder = 'share';
         }
 
-        if (req.user == null && folder?.shared != true) {
-            res.redirect("/login");
-        } else if (req.user == null && rootFolder != 'share') {
-            res.redirect("/login");
+        if (req.session == undefined || user == undefined) {
+            // user is not logged in
+            if (folderData.rootFolder != 'share') {
+                // folder is not shared
+                return res.status(401).redirect("/login");
+            }
         } else {
-            const files = await db.getFiles(folder.id);
-            let editItem;
+            // user is logged in
+            if (folderData == null) {
+                req.session.msg = 'Folder does not exist.';
+                return res.status(404).redirect('/folder/root');
+            }
+            if (folderData.ownerId != user.id) {
+                if (folderData.rootFolder != 'share') {
+                    req.session.msg = 'Folder does not exist.';
+                    return res.status(404).redirect('/folder/root');
+                }
+            }
+        }
+
+        folderData.files = await db.getFiles(folderData.id);
+
+    } catch (err) {
+        return next(err)
+    }
+
+    req.folderData = folderData;
+    return next();
+}
+
+async function fetchEditItemData(res, req, next) {
+    if (!req.query) {
+        return next()
+    }
+
+    const editItem = {
+        id: req.query.editItemId,
+        type: req.query.editItemType,
+        editType: req.query.editType
+    }
+
+    try {
+        if (editItem.type == "folder") {
+            editItem.data = await db.getFolder(editItem.id);
+        } else if (editItem.type == "file") {
+            editItem.data = await db.getFile(editItem.id);
+        } else {
+            editItem.data = null;
+        }
+    } catch (err) {
+        return next(err)
+    }
+
+    req.editItem = editItem;
+    return next();
+}
+
+const getFolder = [
+    fetchFolderData,
+    fetchEditItemData,
+    async (req, res, next) => {
+        let shareFolderId = req.query.shareFolderId; // folder to share
+
+        try {
+            const folderData = req.folderData;
+            const editItem = req.editItem;
             const msg = req.session.msg;
             const errors = req.session.errors;
             req.session.msg = '';
             req.session.errors = '';
 
-            if (editItemType == "folder") {
-                editItem = await db.getFolder(editItemId);
-            } else if (editItemType == "file") {
-                editItem = await db.getFile(editItemId);
-            }
-
-            res.render('folder', {
-                folders: childrenFolders,
-                files: files,
-                currentFolder: folder,
+            res.status(200).render('folder', {
+                currentFolder: folderData,
+                rootFolder: folderData.rootFolder,
                 daysDelete: process.env.DAYS_TO_DELETE,
-                path: await db.getPath(folder.id),
+                path: await db.getPath(folderData.id),
                 filesize: filesize,
-                editItem: editItem,
-                editItemType: editItemType,
-                editType: editType,
-                rootFolder: rootFolder,
+                editItem: editItem?.data,
+                editItemType: editItem?.type,
+                editType: editItem?.editType,
                 shareFolderId: shareFolderId,
                 message: msg,
                 errors: errors
             })
+
+        } catch (err) {
+            return next(err)
         }
-    } catch (err) {
-        next(err)
     }
-}
+]
 
 const postSignup = [
     validateSignup,
@@ -135,7 +182,6 @@ const postSignup = [
                 username: req.body.username,
                 password: req.body.password
             }
-
             return res.status(400).render("signup", {
                 errors: errors.array(),
                 userInput: userInput
@@ -146,15 +192,15 @@ const postSignup = [
             const username = req.body.username;
             const hashedPassword = await bcrypt.hash(req.body.password, 10);
             user.createUser(name, username, hashedPassword)
-            res.redirect("/login");
-        } catch (error) {
-            next(error);
+            res.status(201).redirect("/login");
+        } catch (err) {
+            return next(err);
         }
     }
 ]
 
 function getLogin(req, res) {
-    res.render("login");
+    res.status(200).render("login");
 }
 
 async function logout(req, res, next) {
@@ -162,23 +208,24 @@ async function logout(req, res, next) {
         if (err) {
             return next(err);
         }
-        res.redirect("/");
+        res.status(204).redirect("/");
     })
 }
 
 function getUpload(req, res) {
-    res.render('upload');
+    res.status(200).render('upload');
 }
 
 function errorHandler(err, req, res, next) {
-     if (err instanceof multer.MulterError) {
+    if (err instanceof multer.MulterError) {
         const backURL = req.get('Referer') || '/';
         req.session.msg = err.field;
         return res.status(400).redirect(backURL);
     } else if (err) {
+        console.log(err);
         return res.status(500).render('error');
     }
-    next()
+    return next()
 }
 
 module.exports = {
