@@ -1,7 +1,7 @@
 <div class="file-path">
     <span>Path:</span>
     <% if (rootFolder == 'folder') { %>
-        <a href="/folder/root<%= editType=="move" ? `?editType=${editType}&editItemId=${editItem?.id}&editItemType=folder` : '' %>">Home</a>
+        <a href="/folder/root<%= editItem.editType=="move" ? `?editType=${editItem.editType}&editItemId=${editItem?.id}&editItemType=folder` : '' %>">Home</a>
     <% } %>
     <% if (rootFolder == "trash") { %>
         <a href="/trash/root">Trash</a>
@@ -11,6 +11,6 @@
     <% } %>
     <% path.slice(1).forEach((folder) => { %>
         <span> / </span>
-        <a href="/<%= rootFolder %>/<%= folder.id %><%= editType=="move" ? `?editType=${editType}&editItemId=${editItem?.id}&editItemType=folder` : '' %>"><%= folder.name %></a>
+        <a href="/<%= rootFolder %>/<%= folder.id %><%= editItem.editType=="move" ? `?editType=${editItem.editType}&editItemId=${editItem?.id}&editItemType=folder` : '' %>"><%= folder.name %></a>
     <% }) %>
 </div>

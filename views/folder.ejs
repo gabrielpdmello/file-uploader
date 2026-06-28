@@ -18,9 +18,9 @@
             </div>
             <% } %>
             <div>
-            <% if (editType == "move") { %>
-            <form class="moving-item" action="/move-<%= editItemType %>/<%= editItem.id %>" method="post">
-                <span>Moving <%= editItemType %> <%= editItem.name %></span>
+            <% if (editItem.editType == "move") { %>
+            <form class="moving-item" action="/move-<%= editItem.itemType %>/<%= editItem.id %>" method="post">
+                <span>Moving <%= editItem.itemType %> <%= editItem.name %></span>
                 <input type="hidden" name="currentFolder" value="<%= currentFolder.id %>">
                 <div>
                     <button class="btn--small" type="submit">Move here</button>
@@ -45,7 +45,10 @@
                 <tbody>
                 <% if (currentFolder.childrenFolders.length > 0) { %>
                     <% currentFolder.childrenFolders.forEach(folder => {  %>
-                        <% if (folder.id !== editItem?.id) { %>
+                        <% if (folder.id == editItem?.id && editItem?.editType == 'move') { %>
+                            <% return; %>
+                        <% } %>
+
                         <tr class="folder-row">
                             <td>
                                 <div class="flex-container">
@@ -58,7 +61,7 @@
                                         <a class="btn--small" href="/<%= rootFolder %>/<%= currentFolder.id %>">Cancel</a>
                                     </form>
                                     <% } else { %>
-                                    <a class="item-name folder-link" href="/<%= rootFolder %>/<%= folder.id %><%= editItem!=null ? `?editType=${editType}&editItemId=${editItem.id}&editItemType=${editItemType}` : '' %>"><%= folder.name %></a>
+                                    <a class="item-name folder-link" href="/<%= rootFolder %>/<%= folder.id %><%= editItem.id ? `?editType=${editItem.editType}&editItemId=${editItem.id}&editItemType=${editItem.itemType}` : '' %>"><%= folder.name %></a>
                                     <% } %>
                                 </div>
                             </td>
@@ -111,7 +114,6 @@
                                 <% } %>
                             </td>
                         </tr>
-                        <% } %>
                     <% }) %>
                 <% } %>
                     <% if (currentFolder.files.length > 0) { %>

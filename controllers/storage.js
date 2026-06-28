@@ -133,7 +133,7 @@ async function postTrashFolder(req, res, next) {
         await db.moveFolder(folder.id, trashFolder.id)
         const updateSize = await db.decreaseFolderSize(currentFolder, folder.size)
         const deleteDate = new Date();
-        deleteDate.setDate(deleteDate.getDate() + Number(process.env.DAYS_TO_DELETE))
+        deleteDate.setDate(deleteDate.getDate() + Number(process.env.DAYS_TO_DELETE || 7))
         await db.addJob("delete", folderId, "folder", deleteDate)
     } catch (err) {
         return next(err)

@@ -111,29 +111,21 @@ async function fetchFolderData(req, res, next) {
     return next();
 }
 
-async function fetchEditItemData(res, req, next) {
-    if (!req.query) {
-        return next()
-    }
-
+async function fetchEditItemData(req, res, next) {
     const editItem = {
-        id: req.query.editItemId,
-        type: req.query.editItemType,
-        editType: req.query.editType
-    }
+        itemType: req.query?.editItemType,
+        editType: req.query?.editType
+    };
 
     try {
-        if (editItem.type == "folder") {
-            editItem.data = await db.getFolder(editItem.id);
-        } else if (editItem.type == "file") {
-            editItem.data = await db.getFile(editItem.id);
-        } else {
-            editItem.data = null;
+        if (editItem.itemType == "folder") {
+            Object.assign(editItem, await db.getFolder(req.query?.editItemId))
+        } else if (editItem.itemType == "file") {
+            Object.assign(editItem, await db.getFile(req.query?.editItemId))
         }
     } catch (err) {
         return next(err)
     }
-
     req.editItem = editItem;
     return next();
 }
@@ -158,9 +150,9 @@ const getFolder = [
                 daysDelete: process.env.DAYS_TO_DELETE,
                 path: await db.getPath(folderData.id),
                 filesize: filesize,
-                editItem: editItem?.data,
-                editItemType: editItem?.type,
-                editType: editItem?.editType,
+                editItem: editItem,
+                editItemType: editItem.type,
+                editType: editItem.editType,
                 shareFolderId: shareFolderId,
                 message: msg,
                 errors: errors
