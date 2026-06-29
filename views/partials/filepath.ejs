@@ -1,16 +1,20 @@
 <div class="file-path">
     <span>Path:</span>
-    <% if (rootFolder == 'folder') { %>
-        <a href="/folder/root<%= editItem.editType=="move" ? `?editType=${editItem.editType}&editItemId=${editItem?.id}&editItemType=folder` : '' %>">Home</a>
-    <% } %>
-    <% if (rootFolder == "trash") { %>
-        <a href="/trash/root">Trash</a>
-    <% } %>
-    <% if (rootFolder == "share") { %>
-        <a href="/share/root">Share</a>
+    <% if (currentUser) { %>
+        <% if (rootFolder == 'folder') { %>
+            <a href="/folder/root<%= editItem.editType=="move" ? `?editType=${editItem.editType}&editItemId=${editItem?.id}&editItemType=folder` : '' %>">Home</a>
+            <span> / </span>
+        <% } %>
+        <% if (rootFolder == "trash") { %>
+            <a href="/trash/root">Trash</a>
+            <span> / </span>
+        <% } %>
+        <% if (rootFolder == "share") { %>
+            <a href="/share/root">Share</a>
+            <span> / </span>
+        <% } %>
     <% } %>
     <% path.slice(1).forEach((folder) => { %>
-        <span> / </span>
         <a href="/<%= rootFolder %>/<%= folder.id %><%= editItem.editType=="move" ? `?editType=${editItem.editType}&editItemId=${editItem?.id}&editItemType=folder` : '' %>"><%= folder.name %></a>
     <% }) %>
 </div>

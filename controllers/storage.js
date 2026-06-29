@@ -15,11 +15,21 @@ const validateFolder = [
         .isLength({ min: 1, max: 100 }).withMessage("Folder name must be between 1 and 100 characters.")
 ]
 
+function isAuthenticated(req, res, next) {
+    if (req.session != undefined && req.user != undefined) {
+        return next();
+    } else {
+        return res.status(401).redirect('/login');
+    }
+}
+
 const postAddFolder = [
+    isAuthenticated,
     validateFolder,
     async (req, res, next) => {
         const name = req.body.name;
         const currentFolderId = req.body.currentFolder;
+        const user = req.user;
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             const backURL = req.get('Referer') || '/';
@@ -28,67 +38,89 @@ const postAddFolder = [
         }
 
         try {
-            if (!req.user) {
-                return res.redirect('/login');
-            } else {
-                const currentFolder = await db.getFolder(currentFolderId);
-                const trashFolder = await db.getTrashFolder(req.user.id);
-                const shareFolder = await db.getShareFolder(req.user.id);
-                const backURL = req.get('Referer') || '/';
+            const currentFolder = await db.getFolder(currentFolderId);
+            const trashFolder = await db.getTrashFolder(req.user.id);
+            const shareFolder = await db.getShareFolder(req.user.id);
+            const backURL = req.get('Referer') || '/';
 
-                if (!currentFolder.accept_folder) {
-                    req.session.msg = "Cannot create folder here.";
-                    return res.redirect(backURL);
-                } else {
-                    const parentId = currentFolder.id;
-                    const ownerId = currentFolder.ownerId;
-                    const isShared = currentFolder.shared;
-                    const folder = await db.addFolder(name, parentId, ownerId, isShared);
-                }
+            if (!currentFolder.accept_folder) {
+                req.session.msg = "Cannot create folder here.";
+                return res.status(403).redirect(backURL);
+            } else if (user.id != currentFolder.ownerId) {
+                req.session.msg = "Cannot create folder here.";
+                return res.status(403).redirect(backURL);
+            } else {
+                const parentId = currentFolder.id;
+                const ownerId = currentFolder.ownerId;
+                const isShared = currentFolder.shared;
+                const folder = await db.addFolder(name, parentId, ownerId, isShared);
+            }
+        } catch (err) {
+            return next(err)
+        }
+        const backURL = req.get('Referer') || '/';
+        res.status(201).redirect(backURL);
+    }
+]
+
+const postUpload = [
+    isAuthenticated,
+    upload.array('files'),
+    async (req, res, next) => {
+        const currentFolderId = req.body.currentFolder;
+        const user = req.user;
+        const files = req.files;
+        const backURL = req.get('Referer') || '/';
+
+        try {
+            const currentFolder = await db.getFolder(currentFolderId);
+            if (user.id != currentFolder.ownerId) {
+                req.session.msg = "Cannot upload files here.";
+                return res.status(403).redirect(backURL);
+            }
+            // forEach does not wait for asynchronous operations, so for...of must be used,
+            // to avoid page reload before all files are uploaded
+            for (const file of files) {
+                const filename = file.filename;
+                const filesize = file.size;
+                const originalname = file.originalname;
+                await db.addFile(filename, originalname, currentFolder.id, filesize)
+                await db.increaseFolderSize(currentFolder.id, filesize)
             }
 
         } catch (err) {
             return next(err)
         }
-        const backURL = req.get('Referer') || '/';
-        res.redirect(backURL);
+        res.status(201).redirect(backURL);
     }
 ]
 
-const postUpload = [
-    upload.array('files'),
+const postDownloadFile = [
     async (req, res, next) => {
-        const currentFolder = req.body.currentFolder;
-        const files = req.files;
-
-        // forEach does not wait for asynchronous operations, so for...of must be used,
-        // to avoid page reload before all files are uploaded
-        for (const file of files) {
-            const filename = file.filename;
-            const filesize = file.size;
-            const originalname = file.originalname;
-
-            try {
-                await db.addFile(filename, originalname, currentFolder, filesize)
-                await db.increaseFolderSize(currentFolder, filesize)
-            } catch (err) {
-                return next(err)
-            }
-        }
+        const user = req.user;
+        const fileId = req.params.fileId;
+        const filePath = path.join(__dirname, `../uploads/${user.username}`, `${fileId}`);
         const backURL = req.get('Referer') || '/';
-        res.redirect(backURL);
+        let filename;
+
+        try {
+            const file = await db.getFile(fileId);
+            const folder = await db.getShareFolder(file.folderId);
+            filename = file.name;
+
+            if (user.id != folder.ownerId) {
+                if (!folder.shared) {
+                    req.session.msg = "Cannot download file.";
+                    return res.status(403).redirect(backURL);
+                }
+            }
+        } catch (err) {
+            next(err)
+        }
+
+        res.status(200).download(filePath, filename)
     }
 ]
-
-async function postDownloadFile(req, res) {
-    const username = req.user.username;
-    const fileId = req.params.fileId;
-    const filePath = path.join(__dirname, `../uploads/${username}`, `${fileId}`);
-    const file = await db.getFile(fileId);
-    const filename = file.name;
-    res.download(filePath, filename)
-
-}
 
 async function postDeleteFile(req, res, next) {
     const username = req.user.username;

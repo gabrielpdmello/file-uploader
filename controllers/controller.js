@@ -70,6 +70,8 @@ async function fetchFolderData(req, res, next) {
             folderData.childrenFolders = await db.getSharedFolders(folderData.id)
         } else {
             folderData = await db.getFolder(folderId);
+            console.log(folderData);
+
             folderData.childrenFolders = await db.getChildrenFolders(folderData.id)
         }
 
@@ -83,8 +85,7 @@ async function fetchFolderData(req, res, next) {
 
         if (req.session == undefined || user == undefined) {
             // user is not logged in
-            if (folderData.rootFolder != 'share') {
-                // folder is not shared
+            if (!folderData.shared) {
                 return res.status(401).redirect("/login");
             }
         } else {
@@ -208,6 +209,10 @@ function getUpload(req, res) {
     res.status(200).render('upload');
 }
 
+function getError(req, res) {
+    res.status(404).render('error');
+}
+
 function errorHandler(err, req, res, next) {
     if (err instanceof multer.MulterError) {
         const backURL = req.get('Referer') || '/';
@@ -215,7 +220,7 @@ function errorHandler(err, req, res, next) {
         return res.status(400).redirect(backURL);
     } else if (err) {
         console.log(err);
-        return res.status(500).render('error');
+        return res.status(500).redirect('/error');
     }
     return next()
 }
@@ -232,5 +237,6 @@ module.exports = {
     getLogin,
     logout,
     getUpload,
+    getError,
     errorHandler
 }
