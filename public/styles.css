@@ -386,3 +386,8 @@ thead {
     list-style-type: none;
     padding: 0;
 }
+
+.shared-by {
+    text-align: center;
+    width: 100%;
+}

@@ -52,6 +52,9 @@
                         <tr class="folder-row">
                             <td>
                                 <div class="flex-container">
+                                    <% if (folder.shared) { %>
+                                        <span class="icon--share" title="folder is being shared"></span>
+                                    <% } %>
                                     <span class="icon--folder"></span>
                                     <% if (editItem?.id == folder.id && editType == "rename") { %>
                                     <form class="edit-form" action="/rename-folder/<%= folder.id %>" method="post">
@@ -92,7 +95,7 @@
                                             <input type="hidden" name="currentFolder" value="<%= currentFolder.id %>">
                                         </form>                          
                                         <% } %>              
-                                        <% if (rootFolder == "share") { %>
+                                        <% if (folder.shared) { %>
                                         <form action="/unshare-folder/<%= folder.id %>" method="post">
                                             <button class="btn-icon icon--unshare" type="submit" title="Stop sharing folder"></button>
                                         </form>

@@ -49,6 +49,8 @@ model File {
   previousFolderId String?
   size Int?
   last_update DateTime @default(now())
+  ownerId Int
+  path String
 }
 
 model scheduled_jobs {

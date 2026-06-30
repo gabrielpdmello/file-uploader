@@ -70,8 +70,6 @@ async function fetchFolderData(req, res, next) {
             folderData.childrenFolders = await db.getSharedFolders(folderData.id)
         } else {
             folderData = await db.getFolder(folderId);
-            console.log(folderData);
-
             folderData.childrenFolders = await db.getChildrenFolders(folderData.id)
         }
 
@@ -83,12 +81,7 @@ async function fetchFolderData(req, res, next) {
             folderData.rootFolder = 'share';
         }
 
-        if (req.session == undefined || user == undefined) {
-            // user is not logged in
-            if (!folderData.shared) {
-                return res.status(401).redirect("/login");
-            }
-        } else {
+        if (req.session != undefined && req.user != undefined) {
             // user is logged in
             if (folderData == null) {
                 req.session.msg = 'Folder does not exist.';
@@ -99,6 +92,11 @@ async function fetchFolderData(req, res, next) {
                     req.session.msg = 'Folder does not exist.';
                     return res.status(404).redirect('/folder/root');
                 }
+            }
+        } else {
+            // user is not logged in
+            if (folderData.rootFolder != 'share') {
+                return res.status(401).redirect("/login");
             }
         }
 

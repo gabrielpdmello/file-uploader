@@ -1,6 +1,9 @@
 <div class="file-path">
+    <% if (currentUser?.id != currentFolder.ownerId) { %>
+        <div class="shared-by">Folder shared by <%= currentUser.name %> (@<%= currentUser.username %>)</div>
+    <% } %>
     <span>Path:</span>
-    <% if (currentUser) { %>
+    <% if (currentUser?.id == currentFolder.ownerId) { %>
         <% if (rootFolder == 'folder') { %>
             <a href="/folder/root<%= editItem.editType=="move" ? `?editType=${editItem.editType}&editItemId=${editItem?.id}&editItemType=folder` : '' %>">Home</a>
             <span> / </span>

@@ -118,20 +118,6 @@ async function restoreFile(fileId) {
     })
 }
 
-async function restoreFolder(folderId) {
-    const folder = await getFolder(folderId);
-
-    await prisma.folder.update({
-        where: {
-            id: folder.id
-        },
-        data: {
-            parentId: folder.previousParentId,
-            previousParentId: null
-        }
-    })
-}
-
 async function getFolder(id) {
     const folder = await prisma.folder.findUnique({
         where: {
@@ -160,7 +146,7 @@ async function getFile(id) {
     return file
 }
 
-async function addFile(id, name, folderId, size) {
+async function addFile(id, name, ownerId, folderId, size, path) {
     const file = await prisma.file.create({
         data: {
             id: id,
@@ -168,7 +154,9 @@ async function addFile(id, name, folderId, size) {
                 connect: { id: folderId }
             },
             name: name,
-            size: size
+            ownerId: ownerId,
+            size: size,
+            path: path
         }
     })
 }
