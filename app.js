@@ -24,9 +24,9 @@ app.use(express.urlencoded({ extended: false }));
 app.use(
   expressSession({
     cookie: {
-     maxAge: 7 * 24 * 60 * 60 * 1000 // ms
+     maxAge: process.env.COOKIE_MAX_AGE || 24 * 60 * 60 * 1000 // ms
     },
-    secret: 'a gnome in space',
+    secret: process.env.SECRET || 'a gnome in space',
     resave: true,
     saveUninitialized: true,
     store: new PrismaSessionStore(
