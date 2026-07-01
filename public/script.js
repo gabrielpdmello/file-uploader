@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function hideModal() {
     const modal = document.querySelector('.modal');
-    if (!modal.classList.contains('hidden')) {
+    if (modal != null && !modal.classList.contains('hidden')) {
         modal.classList.add('hidden');
     }
 }
