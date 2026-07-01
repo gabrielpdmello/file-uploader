@@ -59,6 +59,8 @@ router.post('/move-file/:fileId', storage.postMoveFile);
 router.post('/share-folder/:folderId', storage.postShareFolder);
 router.post('/unshare-folder/:folderId', storage.postUnshareFolder);
 
+router.get('/404', controller.get404);
+
 router.get('/error', controller.getError);
 
 router.use(controller.errorHandler);

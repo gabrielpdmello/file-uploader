@@ -1,6 +1,6 @@
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(hideModal, 6000); 
-});
+// document.addEventListener('DOMContentLoaded', () => {
+//     setTimeout(hideModal, 6000); 
+// });
 
 function hideModal() {
     const modal = document.querySelector('.modal');

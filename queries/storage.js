@@ -324,7 +324,7 @@ async function addJobLog(jobType, itemId, itemType, date) {
 }
 
 async function removeJob(itemId) {
-    const job = await prisma.scheduled_jobs.delete({
+    const job = await prisma.scheduled_jobs.deleteMany({
         where: {
             item_id: itemId,
         }
@@ -349,8 +349,7 @@ async function shareFolder(folderId, shareDate) {
         INNER JOIN folderTree ft ON f."parentId" = ft.id
     )
     update "Folder" f
-    set shared = true,
-    "root" = 'share'
+    set shared = true
     from folderTree ft 
     where ft.id = f.id;
     `
@@ -376,8 +375,7 @@ async function unshareFolder(folderId) {
         INNER JOIN folderTree ft ON f."parentId" = ft.id
     )
     update "Folder" f
-    set shared = false,
-    "root" = 'folder'
+    set shared = false
     from folderTree ft 
     where ft.id = f.id;
     `
@@ -394,7 +392,17 @@ async function unshareFolder(folderId) {
     })
 }
 
-async function getUser(username) {
+async function getUserById(id) {
+    const user = await prisma.user.findUnique({
+        where: {
+            id: id
+        }
+    })
+
+    return user
+}
+
+async function getUserByUsername(username) {
     const user = await prisma.user.findFirst({
         where: {
             username: username
@@ -434,5 +442,6 @@ module.exports = {
     getJobs,
     shareFolder,
     unshareFolder,
-    getUser
+    getUserById,
+    getUserByUsername
 }

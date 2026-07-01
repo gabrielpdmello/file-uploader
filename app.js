@@ -42,7 +42,7 @@ app.use(
 app.use("/", router);
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, (error) => {
+app.listen(PORT, "127.0.0.1", (error) => {
   if (error) {
     throw error;
   }

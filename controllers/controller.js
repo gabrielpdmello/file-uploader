@@ -13,7 +13,7 @@ const validateSignup = [
     body('username').trim()
         .isLength({ min: 1, max: 30 }).withMessage('Username must be between 1 and 30 characters.')
         .custom(async value => {
-            const username = await db.getUser(value);
+            const username = await db.getUserByUsername(value);
             if (username?.username) {
                 throw new Error("Username is already in use, choose another.")
             }
@@ -58,22 +58,20 @@ async function fetchFolderData(req, res, next) {
     let folderData;
 
     try {
-        if (originalUrl.includes('/folder/root')) {
+        if (originalUrl == '/folder/root') {
             folderData = await db.getRootFolder(user?.id);
             folderData.childrenFolders = await db.getChildrenFolders(folderData.id)
-        } else if (originalUrl.includes('/trash/root')) {
+        } else if (originalUrl == '/trash/root') {
             folderData = await db.getTrashFolder(user?.id);
             folderData.childrenFolders = await db.getChildrenFolders(folderData.id)
-        } else if (originalUrl.includes('/share/root')) {
+        } else if (originalUrl == '/share/root') {
             folderData = await db.getShareFolder(user?.id);
             folderData.childrenFolders = await db.getSharedFolders(folderData.id)
         } else {
             folderData = await db.getFolder(folderId);
-            folderData.childrenFolders = await db.getChildrenFolders(folderData.id)
-        }
-
-        if (folderData.root == null) {
-            folderData.root = folderData.name;
+            if (folderData != null) {
+                folderData.childrenFolders = await db.getChildrenFolders(folderData.id)
+            }
         }
 
         if (req.session != undefined && req.user != undefined) {
@@ -83,20 +81,34 @@ async function fetchFolderData(req, res, next) {
                 return res.status(404).redirect('/folder/root');
             }
             if (folderData.ownerId != user.id) {
-                if (folderData.root != 'share') {
-                    console.log(folderData.root);
-                    req.session.msg = 'Folder does not exist.';
-                    return res.status(404).redirect('/folder/root');
-                }
+                if (req.originalUrl.includes('share')) {
+                    if (!folderData.shared) {
+                        req.session.msg = 'Folder not found.';
+                        return res.status(404).redirect('/folder/root');
+                    }
+                } 
+                
             }
         } else {
             // user is not logged in
+            if (folderData == null) {
+                if (req.originalUrl.includes('/share/')) {
+                    return res.status(404).redirect('/404');
+                } else {
+                    return res.status(401).redirect('/login');
+                }
+            }
             if (folderData.root != 'share') {
-                return res.status(401).redirect("/login");
+                return res.status(404).redirect("/404");
+            }
+
+            if (req.originalUrl == '/share/root') {
+                return res.status(404).redirect("/login");
             }
         }
 
         folderData.files = await db.getFiles(folderData.id);
+        folderData.folderOwner = await db.getUserById(folderData.ownerId);
 
     } catch (err) {
         return next(err)
@@ -142,6 +154,7 @@ const getFolder = [
 
             res.status(200).render('folder', {
                 currentFolder: folderData,
+                folderOwner: folderData.folderOwner,
                 daysDelete: process.env.DAYS_TO_DELETE,
                 path: path,
                 filesize: filesize,
@@ -149,6 +162,7 @@ const getFolder = [
                 editItemType: editItem.type,
                 editType: editItem.editType,
                 shareFolderId: shareFolderId,
+                url: req.url,
                 message: msg,
                 errors: errors
             })
@@ -203,8 +217,12 @@ function getUpload(req, res) {
     res.status(200).render('upload');
 }
 
+function get404(req, res) {
+    res.status(404).render('404');
+}
+
 function getError(req, res) {
-    res.status(404).render('error');
+    res.status(500).render('error');
 }
 
 function errorHandler(err, req, res, next) {
@@ -231,6 +249,7 @@ module.exports = {
     getLogin,
     logout,
     getUpload,
+    get404,
     getError,
     errorHandler
 }

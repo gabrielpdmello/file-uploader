@@ -39,7 +39,7 @@ model Folder {
   last_update DateTime @default(now())
   accept_file Boolean @default(true)
   accept_folder Boolean @default(true)
-  root String?
+  root String
 }
 
 model File {

@@ -55,7 +55,7 @@ const postAddFolder = [
                 const parentId = currentFolder.id;
                 const ownerId = currentFolder.ownerId;
                 const isShared = currentFolder.shared;
-                const root = currentFolder.root ? currentFolder.root : currentFolder.name;
+                const root = currentFolder.root;
                 const folder = await db.addFolder(name, parentId, ownerId, isShared, root);
             }
         } catch (err) {
@@ -111,7 +111,7 @@ const postDownloadFile = [
             const folder = await db.getFolder(file.folderId);
             filePath = path.join(__dirname, `../uploads/${file.path}`);
 
-            if (user.id != file.ownerId) {
+            if (user == null || user.id != file.ownerId) {
                 if (!folder.shared) {
                     req.session.msg = "Cannot download file.";
                     return res.status(403).redirect(backURL);
@@ -191,6 +191,8 @@ const postTrashFolder = [
             const trashFolder = await db.getTrashFolder(user.id)
             const deleteDate = new Date();
             deleteDate.setDate(deleteDate.getDate() + Number(process.env.DAYS_TO_DELETE || 7))
+            await db.unshareFolder(folderId);
+            await db.removeJob(folderId);
             await db.trashFolder(folder.id, trashFolder.id)
             await db.decreaseFolderSize(currentFolder, folder.size)
             await db.addJob("delete", folderId, "folder", deleteDate)
@@ -299,7 +301,7 @@ const postRenameFile = [
                 return res.status(403).redirect(backURL);
             }
             await db.renameFile(fileId, name);
-            newUrl = `/${currentFolder.root ? currentFolder.root : currentFolder.name}/${currentFolder.id}`;
+            newUrl = `/${currentFolder.root}/${currentFolder.id}`;
         } catch (err) {
             return next(err)
         }
@@ -350,7 +352,7 @@ const postMoveFile = [
                 return res.status(403).redirect(backURL)
             }
             await db.moveFile(fileId, currentFolderId)
-            newUrl = `/${currentFolder.root ? currentFolder.root : currentFolder.name}/${currentFolder.id}`;
+            newUrl = `/${currentFolder.root}/${currentFolder.id}`;
         } catch (err) {
             return next(err)
         }
@@ -383,7 +385,7 @@ const postMoveFolder = [
                 }
             }
             await db.moveFolder(folderId, currentFolderId);
-            newUrl = `/${folder.root ? folder.root : folder.name}/${currentFolderId}`;
+            newUrl = `/${folder.root}/${currentFolderId}`;
 
         } catch (err) {
             return next(err)
@@ -415,7 +417,9 @@ const postShareFolder = [
             
             await db.shareFolder(folderId, shareDate)
             await db.addJob("unshare", folderId, "folder", shareDate)
-            newUrl = `/${folder.root ? folder.root : folder.name}/${folder.parentId}`;
+            const shareUrl = `${req.hostname}/share/${folderId}`;
+            req.session.msg = `Share link: ${shareUrl}`;
+            newUrl = `/${folder.root}/${folder.parentId}`;
         } catch (err) {
             return next(err)
         }

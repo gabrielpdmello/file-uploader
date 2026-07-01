@@ -52,7 +52,7 @@
                         <tr class="folder-row">
                             <td>
                                 <div class="flex-container">
-                                    <% if (folder.shared) { %>
+                                    <% if (folder.shared && !url.includes("share")) { %>
                                         <span class="icon--share" title="folder is being shared"></span>
                                     <% } %>
                                     <span class="icon--folder"></span>
@@ -95,11 +95,11 @@
                                             <input type="hidden" name="currentFolder" value="<%= currentFolder.id %>">
                                         </form>                          
                                         <% } %>              
-                                        <% if (folder.shared) { %>
+                                        <% if (folder.share_folder_id != null) { %>
                                         <form action="/unshare-folder/<%= folder.id %>" method="post">
                                             <button class="btn-icon icon--unshare" type="submit" title="Stop sharing folder"></button>
                                         </form>
-                                        <% } else { %>
+                                        <% } else if (!folder.shared) { %>
                                         <a href="/<%= currentFolder.root %>/<%= currentFolder.id %>?shareFolderId=<%= folder.id %>">
                                             <span class="btn-icon icon--share" title="Share Folder"></span>
                                         </a>

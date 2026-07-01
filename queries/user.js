@@ -13,7 +13,9 @@ async function createUser(name, username, password) {
             name: "folder",
             user: {
                 connect: {id: user.id}
-            }
+            },
+            root: "folder"
+
         }
     })
     await prisma.folder.create({
@@ -23,7 +25,8 @@ async function createUser(name, username, password) {
                 connect: {id: user.id}
             },
             accept_file: false,
-            accept_folder: false
+            accept_folder: false,
+            root: "trash"
 
         }
     })
@@ -34,7 +37,8 @@ async function createUser(name, username, password) {
                 connect: {id: user.id}
             },
             accept_file: false,
-            accept_folder: false
+            accept_folder: false,
+            root: "share"
         }
     })
 }

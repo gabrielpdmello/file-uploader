@@ -1,14 +1,14 @@
 <div class="file-path">
     <% if (currentUser?.id != currentFolder.ownerId) { %>
-        <div class="shared-by">Folder shared by <%= currentUser.name %> (@<%= currentUser.username %>)</div>
+        <div class="shared-by">Folder shared by <%= folderOwner.name %> (@<%= folderOwner.username %>)</div>
     <% } %>
     <span>Path:</span>
     <% if (currentUser?.id == currentFolder.ownerId) { %>
         <span> / </span>
-        <a href="/<%= currentFolder.root %>/root<%= editItem.editType=="move" ? `?editType=${editItem.editType}&editItemId=${editItem?.id}&editItemType=folder` : '' %>"><%= path[0].name %></a>
+        <a href="/<%= currentFolder.root %>/root<%= editItem.editType=="move" ? `?editType=${editItem.editType}&editItemId=${editItem?.id}&editItemType=${editItem.itemType}` : '' %>"><%= url.includes("/share/") ? "share" : path[0].name %></a>
     <% } %>
     <% path.slice(1).forEach((folder) => { %>
         <span> / </span>
-        <a href="/<%= folder.root %>/<%= folder.id %><%= editItem.editType=="move" ? `?editType=${editItem.editType}&editItemId=${editItem?.id}&editItemType=folder` : '' %>"><%= folder.name %></a>
+        <a href="/<%= folder.root %>/<%= folder.id %><%= editItem.editType=="move" ? `?editType=${editItem.editType}&editItemId=${editItem?.id}&editItemType=${editItem.itemType}` : '' %>"><%= folder.name %></a>
     <% }) %>
 </div>
