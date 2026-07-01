@@ -7,6 +7,7 @@ const { PrismaClient } = require('./generated/prisma/client');
 const { PrismaSessionStore } = require('@quixo3/prisma-session-store');
 const cron = require('node-cron');
 const storagedb = require("./queries/storage");
+require('dotenv').config();
 
 const connectionString = `${process.env.DATABASE_URL}`;
 const adapter = new PrismaPg({ connectionString });
@@ -42,7 +43,7 @@ app.use(
 app.use("/", router);
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, "127.0.0.1", (error) => {
+app.listen(PORT, (error) => {
   if (error) {
     throw error;
   }
