@@ -10,7 +10,7 @@ async function createUser(name, username, password) {
     })
     await prisma.folder.create({
         data: {
-            name: "root",
+            name: "folder",
             user: {
                 connect: {id: user.id}
             }

@@ -1,13 +1,13 @@
 const { prisma } = require("../lib/prisma.js");
 
-async function addFolder(name, parent, ownerId, isShare, lastUpdated) {
+async function addFolder(name, parent, ownerId, isShare, root) {
     const folder = await prisma.folder.create({
         data: {
             name: name,
             parentId: parent,
             ownerId: ownerId,
             shared: isShare,
-            lastUpdated
+            root: root
         }
     })
     return folder
@@ -30,7 +30,7 @@ async function getSharedFolders(shareFolderId) {
 async function getRootFolder(ownerId) {
     const root = await prisma.folder.findFirst({
         where: {
-            name: "root",
+            name: "folder",
             parentId: null,
             ownerId: ownerId
         }
@@ -77,6 +77,21 @@ async function moveFolder(folderId, parentId) {
     })
 }
 
+async function trashFolder(folderId, parentId) {
+    const folder = await getFolder(folderId);
+
+    await prisma.folder.update({
+        where: {
+            id: folder.id
+        },
+        data: {
+            parentId: parentId,
+            previousParentId: folder.parentId,
+            root: "trash"
+        }
+    })
+}
+
 async function restoreFolder(folderId) {
     const folder = await getFolder(folderId);
 
@@ -86,7 +101,8 @@ async function restoreFolder(folderId) {
         },
         data: {
             parentId: folder.previousParentId,
-            previousParentId: null
+            previousParentId: null,
+            root: "folder"
         }
     })
 }
@@ -238,7 +254,8 @@ async function getPath(folderId) {
     SELECT
         id,
         name,
-        "parentId"
+        "parentId",
+        "root"
     FROM "Folder"
     WHERE id = ${folderId}
 
@@ -247,7 +264,8 @@ async function getPath(folderId) {
     SELECT
         f.id,
         f.name,
-        f."parentId"
+        f."parentId",
+        f."root"
     FROM "Folder" f
     INNER JOIN folder_hierarchy fh
         ON f.id = fh."parentId"
@@ -266,7 +284,7 @@ async function renameFile(id, name) {
         },
         data: {
             name: name,
-            last_updated: new Date().toISOString()
+            last_update: new Date().toISOString()
         }
     })
 }
@@ -278,7 +296,7 @@ async function renameFolder(id, name) {
         },
         data: {
             name: name,
-            last_updated: new Date().toISOString()
+            last_update: new Date().toISOString()
         }
     })
 }
@@ -331,7 +349,8 @@ async function shareFolder(folderId, shareDate) {
         INNER JOIN folderTree ft ON f."parentId" = ft.id
     )
     update "Folder" f
-    set shared = true
+    set shared = true,
+    "root" = 'share'
     from folderTree ft 
     where ft.id = f.id;
     `
@@ -342,7 +361,8 @@ async function shareFolder(folderId, shareDate) {
         },
         data: {
             share_folder_id: share.id,
-            share_date: shareDate
+            share_date: shareDate,
+            root: "share",
         }
     })
 }
@@ -356,7 +376,8 @@ async function unshareFolder(folderId) {
         INNER JOIN folderTree ft ON f."parentId" = ft.id
     )
     update "Folder" f
-    set shared = false
+    set shared = false,
+    "root" = 'folder'
     from folderTree ft 
     where ft.id = f.id;
     `
@@ -367,7 +388,8 @@ async function unshareFolder(folderId) {
         },
         data: {
             share_folder_id: null,
-            share_date: null
+            share_date: null,
+            root: "folder"
         }
     })
 }
@@ -397,6 +419,7 @@ module.exports = {
     deleteFolder,
     moveFolder,
     moveFile,
+    trashFolder,
     restoreFolder,
     restoreFile,
     getTrashFolder,

@@ -5,7 +5,6 @@ const db = require('../queries/storage');
 const { filesize, partial } = require('filesize');
 const { body, validationResult } = require("express-validator");
 const multer = require('multer');
-
 require('dotenv').config();
 
 const validateSignup = [
@@ -73,12 +72,8 @@ async function fetchFolderData(req, res, next) {
             folderData.childrenFolders = await db.getChildrenFolders(folderData.id)
         }
 
-        if (originalUrl.includes('folder')) {
-            folderData.rootFolder = 'folder';
-        } else if (originalUrl.includes('trash')) {
-            folderData.rootFolder = 'trash';
-        } else if (originalUrl.includes('share')) {
-            folderData.rootFolder = 'share';
+        if (folderData.root == null) {
+            folderData.root = folderData.name;
         }
 
         if (req.session != undefined && req.user != undefined) {
@@ -88,14 +83,15 @@ async function fetchFolderData(req, res, next) {
                 return res.status(404).redirect('/folder/root');
             }
             if (folderData.ownerId != user.id) {
-                if (folderData.rootFolder != 'share') {
+                if (folderData.root != 'share') {
+                    console.log(folderData.root);
                     req.session.msg = 'Folder does not exist.';
                     return res.status(404).redirect('/folder/root');
                 }
             }
         } else {
             // user is not logged in
-            if (folderData.rootFolder != 'share') {
+            if (folderData.root != 'share') {
                 return res.status(401).redirect("/login");
             }
         }
@@ -140,14 +136,14 @@ const getFolder = [
             const editItem = req.editItem;
             const msg = req.session.msg;
             const errors = req.session.errors;
+            const path = await db.getPath(folderData.id);
             req.session.msg = '';
             req.session.errors = '';
 
             res.status(200).render('folder', {
                 currentFolder: folderData,
-                rootFolder: folderData.rootFolder,
                 daysDelete: process.env.DAYS_TO_DELETE,
-                path: await db.getPath(folderData.id),
+                path: path,
                 filesize: filesize,
                 editItem: editItem,
                 editItemType: editItem.type,

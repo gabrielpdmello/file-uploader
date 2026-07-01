@@ -261,6 +261,7 @@ thead {
     background-size: cover;
     background-color: unset;
     flex-shrink: 0;
+    z-index: 2;
 }
 
 .icon--download {
